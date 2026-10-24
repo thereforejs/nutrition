@@ -7,6 +7,9 @@ export interface Rule {
 
 /** Every diagnostic nutrition can raise. Codes are stable; apps translate them, not the messages. */
 export const DIAGNOSTICS = {
+  "weight.zero": {
+    message: () => "the product weighs 0 g, there is nothing to calculate per 100 g",
+  },
   "value.missing": {
     message: () => "the value is missing; unknown is never read as 0",
   },

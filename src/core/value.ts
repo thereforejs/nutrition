@@ -3,7 +3,7 @@ import { fail } from "../diagnostics/fail.ts";
 
 // 12 decimals keep every product of the calculation within decy's 30, and the output rounding
 // (at most 3 decimals) can never see what lies beyond them.
-const SCALE = 12;
+export const CALCULATION = { scale: 12, mode: "halfAwayFromZero" } as const;
 
 /** The input boundary: every amount and nutrient value passes here, and nothing is read as 0. */
 export function toDecimal(input: number | string, path: string): Decimal {
@@ -14,7 +14,7 @@ export function toDecimal(input: number | string, path: string): Decimal {
     // decy refuses NaN, Infinity and anything that is not plain decimal text
   }
   if (!value || isNegative(value)) fail("value.invalid", path, { value: String(input) });
-  return round(value, { scale: SCALE, mode: "halfAwayFromZero" });
+  return round(value, CALCULATION);
 }
 
 function read(input: unknown): Decimal | undefined {

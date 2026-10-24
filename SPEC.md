@@ -110,7 +110,9 @@ For every nutrient: the sum of `amount × value / 100` over all ingredients. Thi
 needs no division by anything but 100.
 
 Per 100 g = sum × 100 / product weight. Per piece = sum × piece weight / product weight. These are the
-only divisions, and they live in one place.
+only divisions, and they live in one place. The quotient is rounded half up to 12 decimals, like the
+input (3.1): 1 g of fat in 300 g is 0.333333333333 g per 100 g. Everything after it (energy, rounding,
+thresholds) works with this one value, so a threshold and a displayed value can never disagree.
 
 ### 4.2 Energy (Annex XIV)
 
@@ -137,7 +139,9 @@ derived from the total.
 
 ### 4.4 Rounding (Commission guidance on tolerances, December 2012, Table 4)
 
-Calculated unrounded, rounded only for the output, half up.
+Calculated at 12 decimals (4.1), rounded only for the output, to the nearest step, half up. The
+guidance shows the half up in its own example: a declared 12 g of protein "could represent a value
+derived from calculation or analysis of between 12.4 g and 11.5 g" (section 6).
 
 | Nutrient                                                   | per 100 g            | Rounding             |
 | ---------------------------------------------------------- | -------------------- | -------------------- |
@@ -155,9 +159,10 @@ Calculated unrounded, rounded only for the output, half up.
 |                                                            | < 1 g and > 0.0125 g | 0.01 g               |
 |                                                            | ≤ 0.0125 g           | "0 g" or "< 0,01 g"  |
 
-**Boundaries are decided without division.** Whether a value per 100 g reaches a threshold is
-`sum × 100 ≥ threshold × product weight`, compared exactly. A quotient that does not terminate (a
-product weight of 300 g) can never land on the wrong side of a boundary.
+**Negligible amounts.** At or below the lowest threshold, or when no detectable amount is present, the
+guidance lets the label read "0 g" or "< x g", or alternatively "contains negligible amounts of ..."
+(section 6). The result marks such a value as negligible, so an application can choose any of the
+three.
 
 **The text keeps the step's decimals**, trailing zeros included: 2.0 g fat rounded to 0.1 g reads
 "2,0 g", never "2 g". Units follow Annex XV (kJ, kcal, g).
@@ -233,8 +238,7 @@ Every rule gets a red test before the code and a sabotage probe after.
 
 1. **Rounding boundaries** of Table 4: exactly 10.0 g, 0.5 g, 0.1 g, 9.96 g, 1 g sodium, 0.005 g sodium,
    0.0125 g salt.
-2. **Boundaries under division:** product weights that give non-terminating quotients (300 g, 700 g)
-   with sums placed exactly on a threshold.
+2. **Non-terminating quotients:** product weights of 300 g and 700 g give 12 decimals, half up.
 3. **Energy** per factor of Annex XIV, kJ and kcal independently.
 4. **Salt and sodium**: either input, both agreeing, both disagreeing (error).
 5. **Missing values**: every required nutrient missing in one ingredient gives its error and path.
@@ -256,7 +260,8 @@ Every rule gets a red test before the code and a sabotage probe after.
 - Optional piece weight in grams (2026-10-24).
 - Locales are imported, not named in an option (2026-10-24).
 - Data in a separate package, split by BLS main food group; German and English names (2026-10-24).
-- Rounding half up, calculated unrounded, energy from unrounded nutrients.
+- Rounding half up, calculated at 12 decimals, energy from the values before display rounding.
+- Values per 100 g and per piece carry 12 decimals; nobody gains from the 124th (2026-10-24).
 - The text keeps trailing zeros of its rounding step: "2,0 g", not "2 g" (2026-10-24).
 - Input values: number or decimal text, more than 12 decimals rounded half up to 12 (2026-10-24).
 - License MIT.
@@ -273,8 +278,8 @@ Every rule gets a red test before the code and a sabotage probe after.
 3. **Rounding at the boundary:** does 9.96 g fat read "10 g" or "10,0 g"? And the meaning of the footnote
    "not applicable to sub-categories" in Table 4.
 4. **Rounding per piece:** does Table 4 apply to values per piece as it does per 100 g?
-5. **Exact value of a non-terminating quotient:** `exact` per 100 g of 1 g in 300 g is 0.333...; which
-   representation the output carries (a fixed scale, or a fraction).
+5. **A precise value below the threshold:** Table 4 says "0 g" or "< x g" "may be declared". Whether a
+   precise value such as "0,3 g" fat may be declared instead is not stated.
 6. **`<LOD`, `<LOQ`, `TR` in the data:** neither zero nor missing. The library does not pick a reading;
    the question is what the caller must state.
 7. **Polyols, erythritol and salatrims as input fields:** whether "polyols" includes erythritol and
