@@ -1,4 +1,4 @@
-/** Names as in the English text of Regulation (EU) No 1169/2011, Art. 30. */
+/** Names as in the English text of Regulation (EU) No 1169/2011, Art. 30 and Annex XIV. */
 export type NutrientKey =
   | "fat"
   | "saturates"
@@ -11,7 +11,11 @@ export type NutrientKey =
   | "fibre"
   | "protein"
   | "salt"
-  | "sodium";
+  | "sodium"
+  | "alcohol"
+  | "organicAcids"
+  | "erythritol"
+  | "salatrims";
 
 /** A number or plain decimal text ("1.2"), read exactly. */
 export type Value = number | string;
