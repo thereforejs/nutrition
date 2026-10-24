@@ -213,8 +213,17 @@ derived from calculation or analysis of between 12.4 g and 11.5 g" (section 6).
 
 **Negligible amounts.** At or below the lowest threshold, or when no detectable amount is present, the
 guidance lets the label read "0 g" or "< x g", or alternatively "contains negligible amounts of ..."
-(section 6). The result marks such a value as negligible, so an application can choose any of the
-three.
+(section 6; Commission Q&A 2018/C 196/01, 3.2.2). The result marks such a value as `negligible`, so
+an application can choose any of the three. Which number the result shows is decided once, by the
+option `negligible`:
+
+- `"auto"` (default), as common practice does: "0 g" when there is none (exactly 0), "<x g" when
+  there is some (0.004 g fat reads "<0,5 g"). Never "0,00 g" or "0,01 g" for an amount under the
+  threshold.
+- `"lessThan"`: always "<x g"; `"zero"`: always "0 g".
+
+The data says it, not only the text: `rounded` is then x and `atMost: true` (an upper bound). x is
+Table 4's own: 0.5 g, 0.1 g for fatty acids, 0.005 g sodium, 0.01 g salt.
 
 **The text keeps the step's decimals**, trailing zeros included: 2.0 g fat rounded to 0.1 g reads
 "2,0 g", never "2 g". Units follow Annex XV (kJ, kcal, g).
@@ -335,7 +344,8 @@ Every rule gets a red test before the code and a sabotage probe after.
 - German labels as Annex XV words them, "Energie" for energy (2026-10-24).
 - Percent of the reference intake: from the exact value, whole percent half up (2026-10-24).
 - Per piece: from the exact sums, rounded by the same steps of Table 4 (2026-10-24).
-- Negligible amounts read "<x g" by default, "0 g" by option (2026-10-24).
+- Negligible amounts: "0 g" when there is none, otherwise "<x g" with `atMost: true` in the data;
+  "always <x" and "always 0" by option (2026-10-24).
 - The rounding step follows the amount itself: 9.96 g fat reads "10,0 g" (Table 4, 2026-10-24).
 - The text keeps trailing zeros of its rounding step: "2,0 g", not "2 g" (2026-10-24).
 - Input values: number or decimal text, more than 12 decimals rounded half up to 12 (2026-10-24).

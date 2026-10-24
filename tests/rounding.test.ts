@@ -3,7 +3,7 @@ import { describe, expect, test } from "vite-plus/test";
 import { type Declared, roundOf } from "../src/core/rounding.ts";
 
 const round = (key: Declared, value: string) => {
-  const { rounded, negligible } = roundOf(key, decimal(value));
+  const { rounded, negligible } = roundOf(key, decimal(value), "zero");
   return { rounded: toDecimalString(rounded), negligible };
 };
 
@@ -72,5 +72,41 @@ describe("each nutrient sits in its own band of Table 4", () => {
     ["polyunsaturates", false],
   ])("%s at 0.3 g: negligible %s", (key, negligible) => {
     expect(roundOf(key, decimal("0.3")).negligible).toBe(negligible);
+  });
+});
+
+// SPEC 4.4: the label reads "0 g" when there is none and "<x g" when there is some (common practice,
+// both allowed by Table 4); the result says so with `atMost`, never only in a text.
+describe("a negligible amount: 0 when there is none, at most x when there is some", () => {
+  const show = (key: Declared, value: string, as?: "auto" | "lessThan" | "zero") => {
+    const { rounded, atMost } = roundOf(key, decimal(value), as);
+    return { rounded: toDecimalString(rounded), atMost };
+  };
+
+  test.each<[Declared, string, string, boolean]>([
+    ["fat", "0", "0", false],
+    ["fat", "0.004", "0.5", true],
+    ["fat", "0.3", "0.5", true],
+    ["fat", "0.5", "0.5", true],
+    ["saturates", "0.05", "0.1", true],
+    ["sodium", "0.001", "0.005", true],
+    ["salt", "0.004", "0.01", true],
+    ["salt", "0", "0", false],
+  ])("auto (the default): %s %s reads %s, at most %s", (key, value, rounded, atMost) => {
+    expect(show(key, value)).toEqual({ rounded, atMost });
+    expect(show(key, value, "auto")).toEqual({ rounded, atMost });
+  });
+
+  test("lessThan: always at most x, even for 0", () => {
+    expect(show("fat", "0", "lessThan")).toEqual({ rounded: "0.5", atMost: true });
+  });
+
+  test("zero: always 0", () => {
+    expect(show("fat", "0.3", "zero")).toEqual({ rounded: "0", atMost: false });
+  });
+
+  test("not negligible: never at most", () => {
+    expect(show("fat", "0.6")).toEqual({ rounded: "0.6", atMost: false });
+    expect(show("energyKJ", "0")).toEqual({ rounded: "0", atMost: false });
   });
 });

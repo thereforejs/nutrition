@@ -16,6 +16,8 @@ export interface DeclaredValue {
   rounded: string;
   /** At or below the threshold of Table 4. */
   negligible: boolean;
+  /** `rounded` is an upper bound: a negligible amount that is there reads "<0,5 g". */
+  atMost: boolean;
   /** Per imported locale, e.g. { "de-DE": "10,0 g" }. */
   text: Record<string, string>;
   /** With the option, for energy and the nutrients of Annex XIII Part B: percent, whole half up. */

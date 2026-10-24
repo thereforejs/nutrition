@@ -9,6 +9,7 @@ export type {
   Ingredient,
   Label,
   Locale,
+  NegligibleAs,
   NutrientKey,
   NutritionInput,
   NutritionOptions,

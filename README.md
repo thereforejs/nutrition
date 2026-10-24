@@ -41,19 +41,19 @@ const { per100g, perPiece, report } = calculateNutrition(
   { locales: [de], voluntary: ["fibre"] },
 );
 
-per100g.energy.kJ; // { exact: "714.5", rounded: "715", negligible: false, text: { "de-DE": "715 kJ" } }
-per100g.fat; //       { exact: "0.5", rounded: "0", negligible: true, text: { "de-DE": "<0,5 g" } }
+per100g.energy.kJ; // { exact: "714.5", rounded: "715", negligible: false, atMost: false, text: { "de-DE": "715 kJ" } }
+per100g.fat; //       { exact: "0.5", rounded: "0.5", negligible: true, atMost: true, text: { "de-DE": "<0,5 g" } }
 ```
 
 Amounts are grams as they end up in the product; their sum is the product weight. Values are grams
 per 100 g, as a number or decimal text. Energy is always calculated, never passed.
 
-| Option            | Default      | Meaning                                                                                                                                                                             |
-| ----------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `locales`         | `[]`         | imported locales, each adds its `text`; import only what you need                                                                                                                   |
-| `negligible`      | `"lessThan"` | a negligible amount reads `"<0,5 g"`, or `"0 g"` with `"zero"`                                                                                                                      |
-| `voluntary`       | `[]`         | voluntary nutrients to declare: `monounsaturates`, `polyunsaturates`, `polyols`, `starch`, `fibre`                                                                                  |
-| `referenceIntake` | `false`      | adds `referenceIntake: { exact, rounded, text }` (percent, whole, half up) to energy and the nutrients of Annex XIII Part B, and `referenceIntakeStatement` per locale (Art. 32(5)) |
+| Option            | Default  | Meaning                                                                                                                                                                              |
+| ----------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `locales`         | `[]`     | imported locales, each adds its `text`; import only what you need                                                                                                                    |
+| `negligible`      | `"auto"` | a negligible amount (Table 4): `"auto"` reads `"0 g"` when there is none and `"<0,5 g"` (`atMost: true`) when there is some; `"lessThan"` always `"<0,5 g"`, `"zero"` always `"0 g"` |
+| `voluntary`       | `[]`     | voluntary nutrients to declare: `monounsaturates`, `polyunsaturates`, `polyols`, `starch`, `fibre`                                                                                   |
+| `referenceIntake` | `false`  | adds `referenceIntake: { exact, rounded, text }` (percent, whole, half up) to energy and the nutrients of Annex XIII Part B, and `referenceIntakeStatement` per locale (Art. 32(5))  |
 
 ## Your values, your responsibility
 

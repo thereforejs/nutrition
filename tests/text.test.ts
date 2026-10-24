@@ -10,7 +10,7 @@ const text = (
   value: string,
   locale = de,
   negligible: "zero" | "lessThan" = "lessThan",
-) => textOf(key, roundOf(key, decimal(value)), locale, negligible).replaceAll(NBSP, " ");
+) => textOf(key, roundOf(key, decimal(value), negligible), locale).replaceAll(NBSP, " ");
 
 describe("the text shows the rounded value with the step's decimals and its unit", () => {
   test.each<[Declared, string, string, string]>([
@@ -28,7 +28,7 @@ describe("the text shows the rounded value with the step's decimals and its unit
   });
 
   test("number and unit stay on one line", () => {
-    expect(textOf("fat", roundOf("fat", decimal("2")), de, "zero")).toBe(`2,0${NBSP}g`);
+    expect(textOf("fat", roundOf("fat", decimal("2")), de)).toBe(`2,0${NBSP}g`);
   });
 });
 

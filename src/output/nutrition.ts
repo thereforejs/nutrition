@@ -77,12 +77,13 @@ function declare(
   // Salt from the sodium share, so both fall on the same side of every Table 4 threshold.
   values.salt = saltOf(values.sodium);
   const entry = (key: Declared, value: Decimal): DeclaredValue => {
-    const result = roundOf(key, value);
+    const result = roundOf(key, value, options.negligible);
     const declared: DeclaredValue = {
       exact: exactText(value),
       rounded: toDecimalString(result.rounded),
       negligible: result.negligible,
-      text: localized(options, (locale) => textOf(key, result, locale, options.negligible)),
+      atMost: result.atMost,
+      text: localized(options, (locale) => textOf(key, result, locale)),
     };
     const percent = options.referenceIntake ? referenceIntakeOf(key, value) : undefined;
     if (!percent) return declared;

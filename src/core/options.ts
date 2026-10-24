@@ -1,16 +1,16 @@
 import { localeSymbols } from "@thereforejs/decy";
 import { fail } from "../diagnostics/fail.ts";
-import type { Label, Locale, NutritionOptions, Voluntary } from "../types/index.ts";
+import type { Label, Locale, NegligibleAs, NutritionOptions, Voluntary } from "../types/index.ts";
 import { isRecord } from "./value.ts";
 
 const defaults: NutritionOptions = {
   locales: [],
-  negligible: "lessThan",
+  negligible: "auto",
   voluntary: [],
   referenceIntake: false,
 };
 
-const NEGLIGIBLE: NutritionOptions["negligible"][] = ["lessThan", "zero"];
+const NEGLIGIBLE: NegligibleAs[] = ["auto", "lessThan", "zero"];
 const VOLUNTARY: Voluntary[] = ["monounsaturates", "polyunsaturates", "polyols", "starch", "fibre"];
 const LABELS: Record<Label, true> = {
   energy: true,
