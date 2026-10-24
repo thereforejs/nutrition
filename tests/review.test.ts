@@ -1,3 +1,4 @@
+import { compare, decimal } from "@thereforejs/decy";
 import fc from "fast-check";
 import { describe, expect, test } from "vite-plus/test";
 import { calculateNutrition, type Ingredient } from "../src/index.ts";
@@ -160,5 +161,129 @@ describe("a key that is not a nutrient refuses the result with its own code", ()
       path: `ingredients[0].per100g.${key}`,
       params: { key },
     });
+  });
+});
+
+// Expected values from Python's decimal module: ROUND_HALF_UP and ROUND_HALF_EVEN differ on a 5.
+describe("every 12-decimal rounding is half up, never half even", () => {
+  test("the division: 2.5e-12 per 100 g reads 3e-12", () => {
+    const { fat } = per100g([
+      { amount: 100, per100g: { fat: "0.000000000005" } },
+      { amount: 100, per100g: {} },
+    ]);
+    expect(fat.exact).toBe("0.000000000003");
+  });
+
+  test("the total: 2.5e-12 g fat in 1 g reads 3e-12 g, so 3e-10 per 100 g", () => {
+    expect(per100g([{ amount: 1, per100g: { fat: "0.00000000025" } }]).fat.exact).toBe(
+      "0.0000000003",
+    );
+  });
+});
+
+// Table 4: between 0.1 and 0.5 g the macronutrients are negligible, the fatty acids are not.
+describe("each nutrient sits in its own band of Table 4", () => {
+  test.each<[string, boolean]>([
+    ["fat", true],
+    ["carbohydrate", true],
+    ["sugars", true],
+    ["polyols", true],
+    ["starch", true],
+    ["fibre", true],
+    ["protein", true],
+    ["saturates", false],
+    ["monounsaturates", false],
+    ["polyunsaturates", false],
+  ])("%s at 0.3 g: negligible %s", (key, negligible) => {
+    const values: Ingredient["per100g"] = { [key]: "0.3", fat: "0.3", carbohydrate: "0.3" };
+    const result = calculateNutrition(
+      { ingredients: [{ amount: 100, per100g: values }] },
+      { voluntary: ["monounsaturates", "polyunsaturates", "polyols", "starch", "fibre"] },
+    ).per100g;
+    expect(result[key as keyof typeof result]).toMatchObject({ negligible });
+  });
+});
+
+// SPEC 9.6, through the public function and for every declared nutrient.
+const thousandths = (max: number) => fc.integer({ min: 0, max }).map((n) => n / 1000);
+const ingredient = fc
+  .record({
+    amount: fc.integer({ min: 1, max: 100000 }).map((n) => n / 1000),
+    fat: thousandths(100000),
+    carbohydrate: thousandths(100000),
+    protein: thousandths(100000),
+    fibre: thousandths(100000),
+    sodium: thousandths(39000),
+    share: fc.integer({ min: 0, max: 1000 }),
+  })
+  .filter(({ fat, carbohydrate, protein, fibre }) => fat + carbohydrate + protein + fibre <= 100)
+  .map(({ amount, fat, carbohydrate, protein, fibre, sodium, share }) => ({
+    amount,
+    per100g: {
+      fat,
+      saturates: Math.floor(fat * share) / 1000,
+      carbohydrate,
+      sugars: Math.floor(carbohydrate * share) / 1000,
+      starch: Math.floor(carbohydrate * (1000 - share)) / 1000,
+      protein,
+      fibre,
+      sodium,
+    },
+  }));
+const options = { voluntary: ["starch", "fibre"] as const };
+const exacts = (ingredients: Ingredient[]) => {
+  const { per100g } = calculateNutrition({ ingredients }, { voluntary: [...options.voluntary] });
+  const { energy, ...nutrients } = per100g;
+  return {
+    kJ: energy.kJ.exact,
+    kcal: energy.kcal.exact,
+    ...Object.fromEntries(Object.entries(nutrients).map(([key, value]) => [key, value?.exact])),
+  };
+};
+const recipe = fc.array(ingredient, { minLength: 1, maxLength: 6 });
+
+describe("properties of the declaration, for every nutrient and the energy", () => {
+  test("scaling every amount by the same factor changes nothing", () => {
+    fc.assert(
+      fc.property(recipe, fc.integer({ min: 2, max: 20 }), (list, k) => {
+        const scaled = list.map((item) => ({
+          ...item,
+          amount: Math.round(item.amount * 1000 * k) / 1000,
+        }));
+        expect(exacts(scaled)).toEqual(exacts(list));
+      }),
+    );
+  });
+
+  test("the order of the ingredients changes nothing", () => {
+    fc.assert(
+      fc.property(recipe, (list) => {
+        expect(exacts([...list].reverse())).toEqual(exacts(list));
+      }),
+    );
+  });
+
+  test("splitting an ingredient in two changes nothing", () => {
+    fc.assert(
+      fc.property(recipe, (list) => {
+        const [first, ...rest] = list;
+        const half = { ...first, amount: first.amount / 2 };
+        expect(exacts([half, half, ...rest])).toEqual(exacts(list));
+      }),
+    );
+  });
+
+  test("adding water never raises a value", () => {
+    fc.assert(
+      fc.property(recipe, fc.integer({ min: 1, max: 1000 }), (list, water) => {
+        const before = exacts(list);
+        const after = exacts([...list, { amount: water, per100g: {} }]);
+        for (const [key, value] of Object.entries(after)) {
+          expect(
+            compare(decimal(String(value)), decimal(String(before[key as keyof typeof before]))),
+          ).toBeLessThanOrEqual(0);
+        }
+      }),
+    );
   });
 });

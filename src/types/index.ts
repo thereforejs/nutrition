@@ -1,4 +1,4 @@
-export type { Diagnostic, DiagnosticCode, DiagnosticParams } from "./diagnostics.ts";
+export type { Diagnostic, DiagnosticCode, DiagnosticParams, ParamsOf } from "./diagnostics.ts";
 export type { Ingredient, NutrientKey, Value } from "./input.ts";
 export type { Label, Locale } from "./locale.ts";
 export type { NutritionOptions, Voluntary } from "./options.ts";

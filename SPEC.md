@@ -86,8 +86,9 @@ Voluntary (Art. 30(2)): mono-unsaturates, polyunsaturates, polyols, starch, fibr
   only what is impossible or contradicts itself: no valid number, a negative value, salt that is not
   sodium × 2.5, a product of 0 g, a part larger than its whole, more than 100 g of a nutrient in
   100 g:
-  - Parts and wholes after Annex I: sugars, starch, polyols in carbohydrate; erythritol in polyols;
-    saturates, mono-, polyunsaturates and salatrims in fat. Each part on its own: a sum of parts that
+  - Parts and wholes after Annex XV ("of which"): sugars, polyols, starch in carbohydrate;
+    saturates, mono-, polyunsaturates in fat. Annex I No 9: erythritol in polyols. Salatrims in fat by
+    the reading of open question 7. Each part on its own: a sum of parts that
     were rounded by Table 4 may exceed its rounded whole (3.35 + 3.35 + 3.25 g of 9.95 g fat read
     3.4 + 3.4 + 3.3 of 10.0), so sums are not compared. An unknown (`null`) whole is not compared.
   - Salt may exceed 100 g: it is sodium × 2.5, an equivalent, not a mass. Solid sodium hydroxide for

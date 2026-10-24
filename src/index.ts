@@ -13,6 +13,7 @@ export type {
   NutritionInput,
   NutritionOptions,
   NutritionResult,
+  ParamsOf,
   ReportEntry,
   Value,
   Voluntary,

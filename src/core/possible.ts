@@ -3,9 +3,10 @@ import { fail } from "../diagnostics/fail.ts";
 import type { Ingredient, NutrientKey } from "../types/index.ts";
 import { toDecimal } from "./value.ts";
 
-// Annex I No 7, 8, 9: carbohydrate includes sugars, starch and polyols; erythritol is a polyol.
-// Annex I No 2: fat means total lipids. Only single parts: a sum of parts rounded by Table 4 may
-// exceed its rounded whole (3.35 + 3.35 + 3.25 of 9.95 g fat reads 3.4 + 3.4 + 3.3 of 10.0).
+// Annex XV: carbohydrate "of which" sugars, polyols, starch; fat "of which" saturates, mono- and
+// polyunsaturates. Annex I No 7: carbohydrate includes polyols; No 9: erythritol is a polyol.
+// Salatrims in fat: the reading of SPEC 11.7 until settled. Only single parts: a sum of parts rounded
+// by Table 4 may exceed its rounded whole (3.35 + 3.35 + 3.25 of 9.95 g fat reads 3.4 + 3.4 + 3.3).
 const PARTS: [part: NutrientKey, whole: NutrientKey][] = [
   ["sugars", "carbohydrate"],
   ["starch", "carbohydrate"],

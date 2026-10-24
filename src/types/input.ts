@@ -23,6 +23,6 @@ export type Value = number | string;
 export interface Ingredient {
   /** Grams as they end up in the finished product. */
   amount: Value;
-  /** Grams per 100 g. `null` or a missing key is unknown, never 0. */
+  /** Grams per 100 g. `0` is none, a missing key is 0, `null` is unknown (SPEC 3.2). */
   per100g: Partial<Record<NutrientKey, Value | null>>;
 }

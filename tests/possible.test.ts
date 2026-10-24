@@ -12,8 +12,8 @@ const run = (per100g: Ingredient["per100g"], keys: NutrientKey[] = ["fat"]) =>
     keys,
   );
 
-// SPEC 3.2: the library refuses only what is impossible. Annex I: carbohydrate includes sugars,
-// starch and polyols; erythritol is a polyol; fat means total lipids.
+// SPEC 3.2: the library refuses only what is impossible. Annex XV: carbohydrate of which sugars,
+// polyols, starch; fat of which saturates, mono-, polyunsaturates. Annex I No 9: erythritol is a polyol.
 describe("a part larger than its whole refuses the result", () => {
   test.each<[NutrientKey, NutrientKey, Ingredient["per100g"]]>([
     ["sugars", "carbohydrate", { carbohydrate: 10, sugars: "10.1" }],
@@ -30,7 +30,7 @@ describe("a part larger than its whole refuses the result", () => {
       code: "value.partExceedsWhole",
       path: `ingredients[1].per100g.${part}`,
       params: { part, whole },
-      source: "Regulation (EU) No 1169/2011, Annex I No 2, 7, 8 and 9",
+      source: "Regulation (EU) No 1169/2011, Annex XV (of which); Annex I No 7 and 9",
     });
   });
 

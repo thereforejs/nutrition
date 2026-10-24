@@ -22,7 +22,7 @@ const without = (whole: Decimal | null, part: Decimal | null) =>
   whole === null ? ZERO : subtract(whole, known(part));
 
 // Regulation (EU) No 1169/2011, Annex XIV (unchanged in the consolidated text of 1.4.2025). The values
-// come as declared, so each part is taken out of its whole (Annex I No 2 and 7; SPEC 4.2).
+// come as declared, so each part is taken out of its whole (Annex I No 2, 7 and 9; SPEC 4.2).
 function annexXIV(v: Record<EnergyKey, Decimal | null>) {
   return [
     { grams: without(v.carbohydrate, v.polyols), ...factor("17", "4") }, // carbohydrate (except polyols)

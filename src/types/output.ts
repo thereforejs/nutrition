@@ -10,7 +10,7 @@ export interface NutritionInput {
 }
 
 export interface DeclaredValue {
-  /** 12 decimals at most, trailing zeros dropped. */
+  /** The calculated value, trailing zeros dropped (energy and salt may carry a 13th decimal). */
   exact: string;
   /** By Table 4, with the decimals of its step ("10.0"). */
   rounded: string;

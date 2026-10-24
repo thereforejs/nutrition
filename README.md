@@ -78,7 +78,34 @@ report: [{ code: "value.missing", nutrient: "fibre", ingredients: [3, 7] }];
 | --------------- | ---------------------------------------------- | -------------------------------------------------------------------------------- |
 | `value.missing` | these ingredients have `null` for the nutrient | find the value (supplier, another database, a lab), or send `0` if there is none |
 
-Errors are not in the report: they refuse the whole result and come as a `DiagnosticError`.
+## Errors
+
+Errors refuse the whole result and come as a `DiagnosticError` whose `diagnostics` carry a stable
+`code`, the `path` into your input and typed `params`; checking `code` narrows `params`.
+
+```ts
+try {
+  calculateNutrition(input);
+} catch (error) {
+  if (error instanceof DiagnosticError) {
+    for (const d of error.diagnostics) {
+      if (d.code === "value.unknownKey") console.log(d.path, d.params.key);
+    }
+  }
+}
+```
+
+| Code                     | Params           | When                                                      |
+| ------------------------ | ---------------- | --------------------------------------------------------- |
+| `input.invalid`          |                  | the input is not `{ ingredients: [{ amount, per100g }] }` |
+| `options.invalid`        | `value`          | an option has a value it cannot have                      |
+| `value.invalid`          | `value`          | not a number or decimal text of at least 0                |
+| `value.unknownKey`       | `key`            | a key in `per100g` that is no nutrient (a typo, `energy`) |
+| `value.above100`         |                  | more than 100 g in 100 g (salt: more than 250 g)          |
+| `value.partExceedsWhole` | `part`, `whole`  | e.g. sugars above carbohydrate (Annex XV)                 |
+| `salt.sodiumMismatch`    | `salt`, `sodium` | both given and salt is not sodium × 2.5 (Annex I No 11)   |
+| `weight.zero`            |                  | the product weighs 0 g                                    |
+| `pieceWeight.zero`       |                  | a piece of 0 g                                            |
 
 ## License
 
