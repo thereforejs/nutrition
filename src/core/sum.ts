@@ -1,8 +1,8 @@
-import { add, type Decimal, decimal, multiply } from "@thereforejs/decy";
+import { add, type Decimal, decimal, multiply, round } from "@thereforejs/decy";
 import type { Ingredient, NutrientKey, ReportEntry } from "../types/index.ts";
 import { checkPossible } from "./possible.ts";
 import { saltOf, sodiumOf } from "./salt.ts";
-import { toDecimal } from "./value.ts";
+import { CALCULATION, toDecimal } from "./value.ts";
 
 const PER_GRAM = decimal("0.01");
 
@@ -33,7 +33,12 @@ export function sumNutrients<K extends NutrientKey>(
     for (const key of keys) {
       const value = valueOf(ingredient.per100g, key, `${at}.per100g`);
       if (value === null) unknown.set(key, [...(unknown.get(key) ?? []), index]);
-      else nutrients[key] = add(nutrients[key], multiply(multiply(amount, value), PER_GRAM));
+      // Back to 12 decimals: per piece multiplies this again by a weight of up to 12 decimals.
+      else
+        nutrients[key] = add(
+          nutrients[key],
+          round(multiply(multiply(amount, value), PER_GRAM), CALCULATION),
+        );
     }
   });
   const report = keys

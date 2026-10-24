@@ -20,6 +20,40 @@
 npm install @thereforejs/nutrition
 ```
 
+## Usage
+
+```ts
+import { calculateNutrition } from "@thereforejs/nutrition";
+import { de } from "@thereforejs/nutrition/locales";
+
+const { per100g, perPiece, report } = calculateNutrition(
+  {
+    ingredients: [
+      {
+        amount: 1000,
+        per100g: { fat: 1, saturates: 0.2, carbohydrate: 70, sugars: 1, protein: 10, fibre: 4 },
+      },
+      { amount: 980, per100g: {} }, // water
+      { amount: 20, per100g: { salt: 100 } },
+    ],
+    pieceWeight: 50, // optional
+  },
+  { locales: [de], voluntary: ["fibre"] },
+);
+
+per100g.energy.kJ; // { exact: "714.5", rounded: "715", negligible: false, text: { "de-DE": "715 kJ" } }
+per100g.fat; //       { exact: "0.5", rounded: "0", negligible: true, text: { "de-DE": "<0,5 g" } }
+```
+
+Amounts are grams as they end up in the product; their sum is the product weight. Values are grams
+per 100 g, as a number or decimal text. Energy is always calculated, never passed.
+
+| Option       | Default      | Meaning                                                                                            |
+| ------------ | ------------ | -------------------------------------------------------------------------------------------------- |
+| `locales`    | `[]`         | imported locales, each adds its `text`; import only what you need                                  |
+| `negligible` | `"lessThan"` | a negligible amount reads `"<0,5 g"`, or `"0 g"` with `"zero"`                                     |
+| `voluntary`  | `[]`         | voluntary nutrients to declare: `monounsaturates`, `polyunsaturates`, `polyols`, `starch`, `fibre` |
+
 ## Your values, your responsibility
 
 The library knows no foods, only the values you pass. It checks that they are possible, not that they

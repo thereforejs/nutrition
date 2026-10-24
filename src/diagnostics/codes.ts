@@ -7,6 +7,12 @@ export interface Rule {
 
 /** Every diagnostic nutrition can raise. Codes are stable; apps translate them, not the messages. */
 export const DIAGNOSTICS = {
+  "options.invalid": {
+    message: (p) => `"${p.value}" is not an allowed value`,
+  },
+  "pieceWeight.zero": {
+    message: () => "a piece of 0 g has no values",
+  },
   "weight.zero": {
     message: () => "the product weighs 0 g, there is nothing to calculate per 100 g",
   },

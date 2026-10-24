@@ -129,8 +129,9 @@ The text keeps number and unit on one line (no-break space) and never groups tho
 
 ### 4.1 Sum (Art. 31(4)(b))
 
-For every nutrient: the sum of `amount × value / 100` over all ingredients. This sum is exact; it
-needs no division by anything but 100.
+For every nutrient: the sum of `amount × value / 100` over all ingredients. Each ingredient's share
+is rounded half up to 12 decimals before it is added: per piece multiplies the sum again by a weight
+of up to 12 decimals, and decy holds 30.
 
 Per 100 g = sum × 100 / product weight. Per piece = sum × piece weight / product weight. These are the
 only divisions, and they live in one place. The quotient is rounded half up to 12 decimals, like the
@@ -306,6 +307,8 @@ Every rule gets a red test before the code and a sabotage probe after.
 - Rounding half up, calculated at 12 decimals, energy from the values before display rounding.
 - Values per 100 g and per piece carry 12 decimals; nobody gains from the 124th (2026-10-24).
 - German labels as Annex XV words them, "Energie" for energy (2026-10-24).
+- Per piece: from the exact sums, rounded by the same steps of Table 4 (2026-10-24).
+- Negligible amounts read "<x g" by default, "0 g" by option (2026-10-24).
 - The rounding step follows the amount itself: 9.96 g fat reads "10,0 g" (Table 4, 2026-10-24).
 - The text keeps trailing zeros of its rounding step: "2,0 g", not "2 g" (2026-10-24).
 - Input values: number or decimal text, more than 12 decimals rounded half up to 12 (2026-10-24).
@@ -325,7 +328,8 @@ Every rule gets a red test before the code and a sabotage probe after.
 3. ~~Rounding at the boundary~~: decided 2026-10-24 by the wording of Table 4, whose step follows the
    amount itself: 9.96 g is "< 10 g", rounds to 0.1 g and reads "10,0 g". Still open: the meaning of
    the footnote "not applicable to sub-categories".
-4. **Rounding per piece:** does Table 4 apply to values per piece as it does per 100 g?
+4. ~~Rounding per piece~~: decided 2026-10-24, the same steps of Table 4, applied to the value per
+   piece, which comes from the exact sums, never from the rounded values per 100 g.
 5. **A precise value below the threshold:** Table 4 says "0 g" or "< x g" "may be declared". Whether a
    precise value such as "0,3 g" fat may be declared instead is not stated.
 6. **`<LOD`, `<LOQ`, `TR` in the data:** neither zero nor missing. The library does not pick a reading;
