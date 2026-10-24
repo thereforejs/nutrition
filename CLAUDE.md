@@ -12,13 +12,16 @@ Decisions in section 10 are not reopened without him.
 
 - **Exact decimals only**, via `@thereforejs/decy`. No JavaScript `number` arithmetic for amounts or
   nutrients. Round only at the output, with the rounding of SPEC 4.4.
-- **It calculates, it never interprets.** A missing value is an error with a stable code and the path
-  to the cause. Before proposing a feature, ask: is this calculating or interpreting?
+- **It calculates, it never interprets.** It knows no foods, only the values it gets: `0` is none,
+  `null` is unknown (calculated without, reported), a missing key is 0. Errors only for impossible or
+  contradicting input (SPEC 3.2). Before proposing a feature, ask: is this calculating or
+  interpreting?
 - **Rules are data with a citation** (regulation, article or annex, number). A rule without a source
   does not exist. Where a rule is enforced, its citation is the comment.
 - **Pure and deterministic:** same input, same output, in Node and every browser. No network, no fs.
 - **Tree-shakable:** no module holds a collection of all locales or all data groups (SPEC 7).
-- **Errors refuse the whole result**, warnings travel with it. One diagnostics channel:
+- **Errors refuse the whole result**; what the calculation went on without goes into the report
+  (SPEC 6). One diagnostics channel for errors:
   `{ code, level, path, params, source }`, every throw through one `fail(code, path, params)`.
 
 ## Language

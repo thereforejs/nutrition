@@ -31,6 +31,7 @@
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.mjs",
+    "./locales": "./dist/locales/index.mjs",
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -45,8 +46,12 @@
     "prepack": "vp check && vp test run && vp pack",
     "prepare": "vp config"
   },
+  "dependencies": {
+    "@thereforejs/decy": "^0.1.1"
+  },
   "devDependencies": {
     "@types/node": "^26.6.5",
+    "fast-check": "^4.10.2",
     "typescript": "^7.0.2",
     "vite-plus": "catalog:"
   },

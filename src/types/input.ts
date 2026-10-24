@@ -1,0 +1,28 @@
+/** Names as in the English text of Regulation (EU) No 1169/2011, Art. 30 and Annex XIV. */
+export type NutrientKey =
+  | "fat"
+  | "saturates"
+  | "monounsaturates"
+  | "polyunsaturates"
+  | "carbohydrate"
+  | "sugars"
+  | "polyols"
+  | "starch"
+  | "fibre"
+  | "protein"
+  | "salt"
+  | "sodium"
+  | "alcohol"
+  | "organicAcids"
+  | "erythritol"
+  | "salatrims";
+
+/** A number or plain decimal text ("1.2"), read exactly. */
+export type Value = number | string;
+
+export interface Ingredient {
+  /** Grams as they end up in the finished product. */
+  amount: Value;
+  /** Grams per 100 g. `0` is none, a missing key is 0, `null` is unknown (SPEC 3.2). */
+  per100g: Partial<Record<NutrientKey, Value | null>>;
+}

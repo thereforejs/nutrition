@@ -1,0 +1,19 @@
+{
+  "locale": "de-DE",
+  "labels": {
+    "energy": "Energie",
+    "fat": "Fett",
+    "ofWhich": "davon:",
+    "saturates": "gesättigte Fettsäuren",
+    "monounsaturates": "einfach ungesättigte Fettsäuren",
+    "polyunsaturates": "mehrfach ungesättigte Fettsäuren",
+    "carbohydrate": "Kohlenhydrate",
+    "sugars": "Zucker",
+    "polyols": "mehrwertige Alkohole",
+    "starch": "Stärke",
+    "fibre": "Ballaststoffe",
+    "protein": "Eiweiß",
+    "salt": "Salz",
+    "sodium": "Natrium"
+  }
+}
