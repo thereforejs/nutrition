@@ -68,6 +68,8 @@ describe("labels as Annex XV words them", () => {
       protein: "Eiweiß",
       salt: "Salz",
       sodium: "Natrium",
+      referenceIntake:
+        "Referenzmenge für einen durchschnittlichen Erwachsenen (8 400 kJ/2 000 kcal)",
     });
   });
 
@@ -87,6 +89,7 @@ describe("labels as Annex XV words them", () => {
       protein: "protein",
       salt: "salt",
       sodium: "sodium",
+      referenceIntake: "Reference intake of an average adult (8 400 kJ/2 000 kcal)",
     });
   });
 });

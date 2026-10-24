@@ -18,6 +18,8 @@ export interface DeclaredValue {
   negligible: boolean;
   /** Per imported locale, e.g. { "de-DE": "10,0 g" }. */
   text: Record<string, string>;
+  /** With the option, for energy and the nutrients of Annex XIII Part B: percent, whole half up. */
+  referenceIntake?: { exact: string; rounded: string; text: Record<string, string> };
 }
 
 type Mandatory = "fat" | "saturates" | "carbohydrate" | "sugars" | "protein" | "salt" | "sodium";
@@ -32,4 +34,6 @@ export interface NutritionResult {
   per100g: Declaration;
   perPiece?: Declaration;
   report: ReportEntry[];
+  /** With the option referenceIntake: the statement of Art. 32(5) per imported locale. */
+  referenceIntakeStatement?: Record<string, string>;
 }

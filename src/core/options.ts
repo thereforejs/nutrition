@@ -3,7 +3,12 @@ import { fail } from "../diagnostics/fail.ts";
 import type { Label, Locale, NutritionOptions, Voluntary } from "../types/index.ts";
 import { isRecord } from "./value.ts";
 
-const defaults: NutritionOptions = { locales: [], negligible: "lessThan", voluntary: [] };
+const defaults: NutritionOptions = {
+  locales: [],
+  negligible: "lessThan",
+  voluntary: [],
+  referenceIntake: false,
+};
 
 const NEGLIGIBLE: NutritionOptions["negligible"][] = ["lessThan", "zero"];
 const VOLUNTARY: Voluntary[] = ["monounsaturates", "polyunsaturates", "polyols", "starch", "fibre"];
@@ -22,6 +27,7 @@ const LABELS: Record<Label, true> = {
   protein: true,
   salt: true,
   sodium: true,
+  referenceIntake: true,
 };
 
 /** Defaults for what is not given (`undefined` included), then every option checked once. */
@@ -41,6 +47,9 @@ export function resolveOptions(options: Partial<NutritionOptions> = {}): Nutriti
     if (!VOLUNTARY.includes(key)) {
       fail("options.invalid", "options.voluntary", { value: String(key) });
     }
+  }
+  if (typeof resolved.referenceIntake !== "boolean") {
+    fail("options.invalid", "options.referenceIntake", { value: String(resolved.referenceIntake) });
   }
   if (!Array.isArray(resolved.locales)) {
     fail("options.invalid", "options.locales", { value: "not a list" });

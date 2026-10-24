@@ -48,11 +48,12 @@ per100g.fat; //       { exact: "0.5", rounded: "0", negligible: true, text: { "d
 Amounts are grams as they end up in the product; their sum is the product weight. Values are grams
 per 100 g, as a number or decimal text. Energy is always calculated, never passed.
 
-| Option       | Default      | Meaning                                                                                            |
-| ------------ | ------------ | -------------------------------------------------------------------------------------------------- |
-| `locales`    | `[]`         | imported locales, each adds its `text`; import only what you need                                  |
-| `negligible` | `"lessThan"` | a negligible amount reads `"<0,5 g"`, or `"0 g"` with `"zero"`                                     |
-| `voluntary`  | `[]`         | voluntary nutrients to declare: `monounsaturates`, `polyunsaturates`, `polyols`, `starch`, `fibre` |
+| Option            | Default      | Meaning                                                                                                                                                                             |
+| ----------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `locales`         | `[]`         | imported locales, each adds its `text`; import only what you need                                                                                                                   |
+| `negligible`      | `"lessThan"` | a negligible amount reads `"<0,5 g"`, or `"0 g"` with `"zero"`                                                                                                                      |
+| `voluntary`       | `[]`         | voluntary nutrients to declare: `monounsaturates`, `polyunsaturates`, `polyols`, `starch`, `fibre`                                                                                  |
+| `referenceIntake` | `false`      | adds `referenceIntake: { exact, rounded, text }` (percent, whole, half up) to energy and the nutrients of Annex XIII Part B, and `referenceIntakeStatement` per locale (Art. 32(5)) |
 
 ## Your values, your responsibility
 

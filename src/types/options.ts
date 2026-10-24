@@ -10,4 +10,6 @@ export interface NutritionOptions {
   negligible: "lessThan" | "zero";
   /** Voluntary nutrients to declare; the mandatory ones always are. */
   voluntary: Voluntary[];
+  /** Adds the percent of the reference intake (Art. 32(4)) and the statement of Art. 32(5). */
+  referenceIntake: boolean;
 }

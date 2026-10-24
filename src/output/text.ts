@@ -5,6 +5,10 @@ import type { Locale } from "../types/index.ts";
 // Number and unit stay on one line.
 const NBSP = " ";
 
+/** "36 %" for a percentage of the reference intake. */
+export const percentText = (rounded: Decimal, locale: Locale) =>
+  `${format(rounded, locale.locale, { useGrouping: false })}${NBSP}%`;
+
 /** "10,0 g", "1431 kJ", or for a negligible amount "0 g" or "<0,5 g" (Table 4). */
 export function textOf(
   key: Declared,

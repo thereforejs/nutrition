@@ -14,6 +14,7 @@
     "fibre": "Ballaststoffe",
     "protein": "Eiweiß",
     "salt": "Salz",
-    "sodium": "Natrium"
+    "sodium": "Natrium",
+    "referenceIntake": "Referenzmenge für einen durchschnittlichen Erwachsenen (8 400 kJ/2 000 kcal)"
   }
 }

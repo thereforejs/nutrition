@@ -12,7 +12,9 @@ export type Label =
   | "fibre"
   | "protein"
   | "salt"
-  | "sodium";
+  | "sodium"
+  /** The statement of Art. 32(5) next to percentages of reference intakes. */
+  | "referenceIntake";
 
 export interface Locale {
   /** BCP 47 tag for the number format, e.g. "de-DE". */
