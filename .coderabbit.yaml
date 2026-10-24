@@ -1,0 +1,62 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+
+reviews:
+  # Everything here calculates; a wrong number reaches every label at once.
+  profile: assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  sequence_diagrams: false
+  in_progress_fortune: false
+  auto_review:
+    enabled: true
+    drafts: false
+    # Release PRs from uppt only carry the version and the changelog.
+    ignore_usernames:
+      - github-actions[bot]
+  path_filters:
+    - "!pnpm-lock.yaml"
+    - "!dist/**"
+    - "!docs/**"
+  path_instructions:
+    - path: "**"
+      instructions: |
+        This library calculates the nutrition declaration of a food from its ingredients under
+        Regulation (EU) No 1169/2011 (Art. 30 to 35, Annex I, XIV, XV) and the Commission guidance on
+        tolerances (December 2012, Table 4). A wrong number is the worst possible bug; correctness beats
+        style. SPEC.md is the source of truth for every rule; flag code that disagrees with it.
+        - No em dashes or en dashes anywhere (code, comments, docs); a plain hyphen only.
+        - Comments explain why, not what; few and short. Where a legal rule is enforced, its citation
+          (regulation, article or annex) is the comment.
+    - path: "src/**/*.ts"
+      instructions: |
+        - Amounts and nutrients use @thereforejs/decy only. Flag any arithmetic, comparison or
+          rounding on JavaScript numbers for such values.
+        - Every input value passes toDecimal (src/core/value.ts) and is held at 12 decimals
+          (CALCULATION). decy allows at most 30 decimals: flag any new multiplication that could push
+          a product past 30 (e.g. two 12-decimal values times a factor without rounding back).
+        - What a value means (SPEC 3.2): `0` is none, a missing key is 0, `null` is unknown and is
+          calculated without and listed in the report. Errors through fail(code, path, params) only
+          for impossible or contradicting input. Flag a `null` that is silently read as 0, a missing
+          value that throws, or `throw new Error` instead of fail().
+        - Every rule lives in one place (energy factors in energy.ts, Table 4 in rounding.ts, salt in
+          salt.ts). Flag a rule duplicated elsewhere.
+        - Tree-shaking: no module may hold a collection of all locales; the core never imports data.
+        - Pure and deterministic: no I/O, no Date, no randomness, no locale taken from the environment.
+        - No `any`, no `as never`, no dead guards. Imports from vite-plus, never from vite or vitest.
+    - path: "src/locales/*.json"
+      instructions: |
+        Labels are the exact words of Annex XV of Regulation (EU) No 1169/2011 in the consolidated text
+        of 1 April 2025 in that language (German "Energie", "mehrwertige Alkohole"); sodium as Annex I
+        No 11 names it. Flag any wording that is not the regulation's.
+    - path: "tests/**/*.ts"
+      instructions: |
+        Every rule needs a test that fails without it. Expected numbers are calculated independently
+        (by hand or Python's decimal module) and the calculation is in a comment; flag an expected value
+        that looks copied from the code's own output. Prefer exact expected output over loose matching.
+        Property tests use fast-check and only generate possible inputs. Do not suggest weakening an
+        assertion to make a test pass.
+
+chat:
+  auto_reply: true
