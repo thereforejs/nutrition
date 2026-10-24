@@ -299,6 +299,7 @@ Every rule gets a red test before the code and a sabotage probe after.
 - Data in a separate package, split by BLS main food group; German and English names (2026-10-24).
 - Rounding half up, calculated at 12 decimals, energy from the values before display rounding.
 - Values per 100 g and per piece carry 12 decimals; nobody gains from the 124th (2026-10-24).
+- The rounding step follows the amount itself: 9.96 g fat reads "10,0 g" (Table 4, 2026-10-24).
 - The text keeps trailing zeros of its rounding step: "2,0 g", not "2 g" (2026-10-24).
 - Input values: number or decimal text, more than 12 decimals rounded half up to 12 (2026-10-24).
 - `0` is none, `null` is unknown (calculated without, reported), a missing key is 0. Errors only for
@@ -314,8 +315,9 @@ Every rule gets a red test before the code and a sabotage probe after.
    documents; the download page puts the data under CC BY 4.0. A written confirmation from the Max
    Rubner-Institut settles it before the data package is published.
 2. ~~Energy of nutrients not declared~~: decided 2026-10-24, they count (4.2).
-3. **Rounding at the boundary:** does 9.96 g fat read "10 g" or "10,0 g"? And the meaning of the footnote
-   "not applicable to sub-categories" in Table 4.
+3. ~~Rounding at the boundary~~: decided 2026-10-24 by the wording of Table 4, whose step follows the
+   amount itself: 9.96 g is "< 10 g", rounds to 0.1 g and reads "10,0 g". Still open: the meaning of
+   the footnote "not applicable to sub-categories".
 4. **Rounding per piece:** does Table 4 apply to values per piece as it does per 100 g?
 5. **A precise value below the threshold:** Table 4 says "0 g" or "< x g" "may be declared". Whether a
    precise value such as "0,3 g" fat may be declared instead is not stated.
