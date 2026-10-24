@@ -129,9 +129,10 @@ The text keeps number and unit on one line (no-break space) and never groups tho
 
 ### 4.1 Sum (Art. 31(4)(b))
 
-For every nutrient: the sum of `amount × value / 100` over all ingredients. Each ingredient's share
-is rounded half up to 12 decimals before it is added: per piece multiplies the sum again by a weight
-of up to 12 decimals, and decy holds 30.
+For every nutrient: the sum of `amount × value / 100` over all ingredients, exact. Only the total is
+rounded half up to 12 decimals: per piece multiplies it again by a weight of up to 12 decimals, and
+decy holds 30. So splitting an ingredient in two never changes a result. For a product of less than
+1 g this rounding can show in the last decimals per 100 g; nobody declares such a product.
 
 Per 100 g = sum × 100 / product weight. Per piece = sum × piece weight / product weight. These are the
 only divisions, and they live in one place. The quotient is rounded half up to 12 decimals, like the
@@ -154,7 +155,10 @@ kJ and kcal each with their own factors, never converted into each other:
 | Fibre                         |    8 |      2 |
 | Erythritol                    |    0 |      0 |
 
-Energy is calculated from the unrounded nutrients, and from every component the data has, whether
+Energy is calculated per ingredient and then summed, so that a part is only ever taken out of its own
+ingredient's whole: an ingredient whose carbohydrate is unknown (`null`) still counts its polyols at
+10 kJ, and nothing of another ingredient is subtracted for them. It is calculated from the unrounded
+nutrients, and from every component the data has, whether
 the table shows it or not: the factors apply to "the energy value to be declared", not only to
 declared nutrients. Fibre in a wholemeal bread counts even when the label shows only the mandatory
 nutrients.
@@ -173,8 +177,9 @@ Annex XIV and the definitions of Annex I are unchanged in the consolidated text 
 
 ### 4.3 Salt (Annex I No 11)
 
-Salt = sodium × 2.5. Internally every ingredient is held as sodium (salt × 0.4, exact); salt is
-derived from the total.
+Salt = sodium × 2.5. Every ingredient is held as sodium (salt × 0.4, exact), and only sodium is
+summed and divided. Salt is derived at the very end from the sodium per 100 g or per piece, so salt and
+sodium always fall on the same side of every threshold of Table 4.
 
 ### 4.4 Rounding (Commission guidance on tolerances, December 2012, Table 4)
 

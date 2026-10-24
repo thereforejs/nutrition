@@ -8,7 +8,7 @@ import { plain } from "./helpers/decimal.ts";
 import { diagnosticOf } from "./helpers/diagnostic.ts";
 
 const fatIn = (ingredients: Ingredient[], grams: string | number = 100) =>
-  plain(shareOf(sumNutrients(ingredients, ["fat"]), decimal(String(grams))).fat);
+  plain(shareOf(sumNutrients(ingredients, ["fat"]), decimal(String(grams))).nutrients.fat);
 
 // A product of the given weight with `fat` grams of pure fat, the rest water.
 const product = (fat: number, weight: number): Ingredient[] => [

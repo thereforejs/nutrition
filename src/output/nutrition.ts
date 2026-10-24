@@ -1,7 +1,8 @@
 import { type Decimal, decimal, isZero, toDecimalString } from "@thereforejs/decy";
-import { ENERGY_KEYS, energyOf } from "../core/energy.ts";
+import { ENERGY_KEYS } from "../core/energy.ts";
 import { resolveOptions } from "../core/options.ts";
 import { type Declared, roundOf } from "../core/rounding.ts";
+import { saltOf } from "../core/salt.ts";
 import { shareOf } from "../core/share.ts";
 import { sumNutrients, type Totals } from "../core/sum.ts";
 import { toDecimal } from "../core/value.ts";
@@ -65,8 +66,9 @@ function declare(
   keys: (Declared & NutrientKey)[],
   options: NutritionOptions,
 ): Declaration {
-  const values = shareOf(totals, grams);
-  const { kJ, kcal } = energyOf(values);
+  const { nutrients: values, energy } = shareOf(totals, grams);
+  // Salt from the sodium share, so both fall on the same side of every Table 4 threshold.
+  values.salt = saltOf(values.sodium);
   const entry = (key: Declared, value: Decimal): DeclaredValue => {
     const result = roundOf(key, value);
     return {
@@ -83,7 +85,7 @@ function declare(
   };
   const nutrients = Object.fromEntries(keys.map((key) => [key, entry(key, values[key])]));
   return {
-    energy: { kJ: entry("energyKJ", kJ), kcal: entry("energyKcal", kcal) },
+    energy: { kJ: entry("energyKJ", energy.kJ), kcal: entry("energyKcal", energy.kcal) },
     ...nutrients,
   } as Declaration;
 }

@@ -1,6 +1,6 @@
 import { decimal } from "@thereforejs/decy";
 import { describe, expect, test } from "vite-plus/test";
-import { ENERGY_KEYS, energyOf } from "../src/core/energy.ts";
+import { ENERGY_KEYS } from "../src/core/energy.ts";
 import { shareOf } from "../src/core/share.ts";
 import { sumNutrients } from "../src/core/sum.ts";
 import type { Ingredient } from "../src/index.ts";
@@ -8,7 +8,7 @@ import { plain } from "./helpers/decimal.ts";
 
 const energy = (per100g: Ingredient["per100g"], amount: number | string = 100) => {
   const totals = sumNutrients([{ amount, per100g }], ENERGY_KEYS);
-  const { kJ, kcal } = energyOf(shareOf(totals, decimal("100")));
+  const { kJ, kcal } = shareOf(totals, decimal("100")).energy;
   return { kJ: plain(kJ), kcal: plain(kcal) };
 };
 

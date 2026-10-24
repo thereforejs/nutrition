@@ -1,5 +1,6 @@
 import { add, type Decimal, decimal, multiply, round } from "@thereforejs/decy";
 import type { Ingredient, NutrientKey, ReportEntry } from "../types/index.ts";
+import { ENERGY_KEYS, type EnergyKey, energyOf } from "./energy.ts";
 import { checkPossible } from "./possible.ts";
 import { saltOf, sodiumOf } from "./salt.ts";
 import { CALCULATION, toDecimal } from "./value.ts";
@@ -11,6 +12,8 @@ export interface Totals<K extends NutrientKey> {
   weight: Decimal;
   /** Grams of each nutrient in the whole product. */
   nutrients: Record<K, Decimal>;
+  /** Energy of the whole product, summed per ingredient. */
+  energy: { kJ: Decimal; kcal: Decimal };
   report: ReportEntry[];
 }
 
@@ -24,23 +27,32 @@ export function sumNutrients<K extends NutrientKey>(
     K,
     Decimal
   >;
+  let energy = { kJ: decimal("0"), kcal: decimal("0") };
   const unknown = new Map<K, number[]>();
   ingredients.forEach((ingredient, index) => {
     const at = `ingredients[${index}]`;
     const amount = toDecimal(ingredient.amount, `${at}.amount`);
+    const grams = (value: Decimal) => multiply(multiply(amount, value), PER_GRAM);
     weight = add(weight, amount);
     checkPossible(ingredient.per100g, `${at}.per100g`);
     for (const key of keys) {
       const value = valueOf(ingredient.per100g, key, `${at}.per100g`);
       if (value === null) unknown.set(key, [...(unknown.get(key) ?? []), index]);
-      // Back to 12 decimals: per piece multiplies this again by a weight of up to 12 decimals.
-      else
-        nutrients[key] = add(
-          nutrients[key],
-          round(multiply(multiply(amount, value), PER_GRAM), CALCULATION),
-        );
+      else nutrients[key] = add(nutrients[key], grams(value));
     }
+    const parts = Object.fromEntries(
+      ENERGY_KEYS.map((key) => [key, valueOf(ingredient.per100g, key, `${at}.per100g`)]),
+    ) as Record<EnergyKey, Decimal | null>;
+    const own = energyOf(parts);
+    energy = { kJ: add(energy.kJ, grams(own.kJ)), kcal: add(energy.kcal, grams(own.kcal)) };
   });
+  // Salt is sodium × 2.5 of the sodium total (Annex I No 11): summed as sodium above.
+  const all: Partial<Record<NutrientKey, Decimal>> = nutrients;
+  if (all.salt) all.salt = saltOf(all.salt);
+  // Sums stay exact; only the totals go back to 12 decimals, because per piece multiplies them
+  // again by a weight of up to 12 decimals and decy holds 30.
+  for (const key of keys) nutrients[key] = round(nutrients[key], CALCULATION);
+  energy = { kJ: round(energy.kJ, CALCULATION), kcal: round(energy.kcal, CALCULATION) };
   const report = keys
     .filter((key) => unknown.has(key))
     .map((key) => ({
@@ -48,16 +60,12 @@ export function sumNutrients<K extends NutrientKey>(
       nutrient: key,
       ingredients: unknown.get(key) ?? [],
     }));
-  return { weight, nutrients, report };
+  return { weight, nutrients, energy, report };
 }
 
-// SPEC 3.2: a missing key is 0, `null` is unknown and calculated without.
+// SPEC 3.2: a missing key is 0, `null` is unknown and calculated without. Salt is summed as sodium.
 function valueOf(per100g: Ingredient["per100g"], key: NutrientKey, at: string): Decimal | null {
-  if (key === "sodium") return sodiumOf(per100g, at);
-  if (key === "salt") {
-    const sodium = sodiumOf(per100g, at);
-    return sodium && saltOf(sodium);
-  }
+  if (key === "sodium" || key === "salt") return sodiumOf(per100g, at);
   const value = per100g[key];
   if (value === undefined) return decimal("0");
   return value === null ? null : toDecimal(value, `${at}.${key}`);
