@@ -60,7 +60,11 @@ A flat list. Per ingredient:
 **The sum of all amounts is the weight of the finished product.** There is no second weight input that
 could disagree with it.
 
-Numbers come in as decimal strings and are parsed exactly at the boundary.
+Values come in as a JavaScript number or as plain decimal text (`"1.2"`); callers never need decy.
+They are read exactly at the boundary: a number by its shortest decimal (`0.1` is 0.1, not the binary
+0.1000000000000000055...). More than 12 decimals are rounded half up to 12, so a computed
+`0.1 + 0.2` (0.30000000000000004) reads as 0.3. 12 decimals keep every intermediate product within
+decy's 30, and the output rounding (at most 3 decimals) never sees what lies beyond them.
 
 ### 3.2 Nutrients
 
@@ -254,6 +258,7 @@ Every rule gets a red test before the code and a sabotage probe after.
 - Data in a separate package, split by BLS main food group; German and English names (2026-10-24).
 - Rounding half up, calculated unrounded, energy from unrounded nutrients.
 - The text keeps trailing zeros of its rounding step: "2,0 g", not "2 g" (2026-10-24).
+- Input values: number or decimal text, more than 12 decimals rounded half up to 12 (2026-10-24).
 - License MIT.
 
 ---

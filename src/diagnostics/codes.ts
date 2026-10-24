@@ -10,6 +10,11 @@ export const DIAGNOSTICS = {
   "value.missing": {
     message: () => "the value is missing; unknown is never read as 0",
   },
+  "salt.sodiumMismatch": {
+    source: "Regulation (EU) No 1169/2011, Annex I No 11",
+    message: (p) =>
+      `salt ${p.salt} g is not sodium ${p.sodium} g × 2.5, give one of them or fix it`,
+  },
   "value.invalid": {
     message: (p) => `"${p.value}" is no amount, expected a number or decimal text of at least 0`,
   },

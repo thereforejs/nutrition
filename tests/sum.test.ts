@@ -1,17 +1,12 @@
-import { type Decimal, toDecimalString } from "@thereforejs/decy";
+import type { Decimal } from "@thereforejs/decy";
 import { describe, expect, test } from "vite-plus/test";
 import { sumNutrients, type Totals } from "../src/core/sum.ts";
 import type { Ingredient, NutrientKey } from "../src/index.ts";
+import { plain } from "./helpers/decimal.ts";
 import { diagnosticOf } from "./helpers/diagnostic.ts";
 
 const flour: Ingredient = { amount: 1000, per100g: { fat: "1.2", protein: 10 } };
 const water: Ingredient = { amount: "600", per100g: { fat: 0, protein: 0 } };
-
-// decy keeps the scale of a product (1000 × 1.2 × 0.01 is "12.000"); compare by value.
-const plain = (value: Decimal) =>
-  toDecimalString(value)
-    .replace(/(\.\d*?)0+$/, "$1")
-    .replace(/\.$/, "");
 
 const text = <K extends NutrientKey>(totals: Totals<K>) => ({
   weight: plain(totals.weight),
