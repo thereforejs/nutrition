@@ -1,6 +1,7 @@
 import { localeSymbols } from "@thereforejs/decy";
 import { fail } from "../diagnostics/fail.ts";
 import type { Label, Locale, NutritionOptions, Voluntary } from "../types/index.ts";
+import { isRecord } from "./value.ts";
 
 const defaults: NutritionOptions = { locales: [], negligible: "lessThan", voluntary: [] };
 
@@ -25,6 +26,7 @@ const LABELS: Record<Label, true> = {
 
 /** Defaults for what is not given (`undefined` included), then every option checked once. */
 export function resolveOptions(options: Partial<NutritionOptions> = {}): NutritionOptions {
+  if (!isRecord(options)) fail("options.invalid", "options", { value: String(options) });
   const given = Object.fromEntries(
     Object.entries(options).filter(([, value]) => value !== undefined),
   );

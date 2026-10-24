@@ -24,3 +24,7 @@ function read(input: unknown): Decimal | undefined {
   if (typeof input === "number") return fromNumber(input >= 0 && input < 1e-13 ? 0 : input);
   return undefined;
 }
+
+/** A plain object: not null and not a list (JSON and plain JavaScript can pass either). */
+export const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);

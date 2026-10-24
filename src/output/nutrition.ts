@@ -5,7 +5,7 @@ import { type Declared, roundOf } from "../core/rounding.ts";
 import { saltOf } from "../core/salt.ts";
 import { shareOf } from "../core/share.ts";
 import { sumNutrients, type Totals } from "../core/sum.ts";
-import { toDecimal } from "../core/value.ts";
+import { isRecord, toDecimal } from "../core/value.ts";
 import { fail } from "../diagnostics/fail.ts";
 import type {
   Declaration,
@@ -45,6 +45,7 @@ export function calculateNutrition(
   input: NutritionInput,
   options: Partial<NutritionOptions> = {},
 ): NutritionResult {
+  if (!isRecord(input)) fail("input.invalid", "input");
   const resolved = resolveOptions(options);
   const voluntary = new Set<NutrientKey>(resolved.voluntary);
   const keys = [

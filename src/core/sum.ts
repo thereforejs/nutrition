@@ -4,7 +4,7 @@ import type { Ingredient, NutrientKey, ReportEntry } from "../types/index.ts";
 import { ENERGY_KEYS, type EnergyKey, energyOf } from "./energy.ts";
 import { checkPossible } from "./possible.ts";
 import { saltOf, sodiumOf } from "./salt.ts";
-import { CALCULATION, toDecimal } from "./value.ts";
+import { CALCULATION, isRecord, toDecimal } from "./value.ts";
 
 const PER_GRAM = decimal("0.01");
 
@@ -34,10 +34,9 @@ export function sumNutrients<K extends NutrientKey>(
   if (!Array.isArray(ingredients)) fail("input.invalid", "ingredients");
   ingredients.forEach((ingredient, index) => {
     const at = `ingredients[${index}]`;
-    if (typeof ingredient !== "object" || ingredient === null) fail("input.invalid", at);
-    if (typeof ingredient.per100g !== "object" || ingredient.per100g === null) {
-      fail("input.invalid", `${at}.per100g`);
-    }
+    if (!isRecord(ingredient)) fail("input.invalid", at);
+    // A list would read as "no keys", that is all 0: a silent wrong number.
+    if (!isRecord(ingredient.per100g)) fail("input.invalid", `${at}.per100g`);
     const amount = toDecimal(ingredient.amount, `${at}.amount`);
     const grams = (value: Decimal) => multiply(multiply(amount, value), PER_GRAM);
     weight = add(weight, amount);

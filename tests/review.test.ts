@@ -98,7 +98,9 @@ describe("options and input are checked, never a foreign error", () => {
     expect(result.per100g.fat.text).toEqual({});
   });
 
-  test.each<[string, object, string]>([
+  test.each<[string, unknown, string]>([
+    ["options that are null", null, "options"],
+    ["options that are a list", ["fibre"], "options"],
     ["voluntary not a list", { voluntary: "fibre" }, "options.voluntary"],
     ["locales not a list", { locales: de }, "options.locales"],
     [
@@ -125,6 +127,14 @@ describe("options and input are checked, never a foreign error", () => {
     ["no ingredients list", {}, "ingredients"],
     ["an ingredient that is null", { ingredients: [null] }, "ingredients[0]"],
     ["an ingredient without per100g", { ingredients: [{ amount: 1 }] }, "ingredients[0].per100g"],
+    [
+      "per100g as an empty list (would read as all 0)",
+      { ingredients: [{ amount: 1, per100g: [] }] },
+      "ingredients[0].per100g",
+    ],
+    ["per100g as a list", { ingredients: [{ amount: 1, per100g: [5] }] }, "ingredients[0].per100g"],
+    ["input that is null", null, "input"],
+    ["input that is a list", [], "input"],
   ])("%s", (_, input, path) => {
     expect(diagnosticOf(() => calculateNutrition(input as never))).toMatchObject({
       code: "input.invalid",
