@@ -4,6 +4,8 @@ import { sumNutrients, type Totals } from "../src/core/sum.ts";
 import type { Ingredient, NutrientKey } from "../src/index.ts";
 import { plain } from "./helpers/decimal.ts";
 import { diagnosticOf } from "./helpers/diagnostic.ts";
+import { per100g } from "./helpers/nutrition.ts";
+import { calculateNutrition } from "../src/index.ts";
 
 const flour: Ingredient = { amount: 1000, per100g: { fat: "1.2", protein: 10 } };
 const water: Ingredient = { amount: "600", per100g: { fat: 0, protein: 0 } };
@@ -75,5 +77,32 @@ describe("invalid input refuses the result", () => {
     expect(
       diagnosticOf(() => sumNutrients([{ amount: 1, per100g: { fat: "1,2" } }], ["fat"])),
     ).toMatchObject({ code: "value.invalid", path: "ingredients[0].per100g.fat" });
+  });
+});
+
+describe("sums are exact; only the total is rounded to 12 decimals", () => {
+  test("splitting a tiny ingredient changes nothing", () => {
+    const whole = per100g([
+      { amount: "0.000000000002", per100g: { fat: 50 } },
+      { amount: 1, per100g: {} },
+    ]);
+    const split = per100g([
+      { amount: "0.000000000001", per100g: { fat: 50 } },
+      { amount: "0.000000000001", per100g: { fat: 50 } },
+      { amount: 1, per100g: {} },
+    ]);
+    expect(split.fat.exact).toBe(whole.fat.exact);
+  });
+});
+
+describe("an ingredient of 0 g leaves nothing out", () => {
+  test("its unknown values are not reported", () => {
+    const { report } = calculateNutrition({
+      ingredients: [
+        { amount: 100, per100g: { fat: 1 } },
+        { amount: 0, per100g: { fibre: null } },
+      ],
+    });
+    expect(report).toEqual([]);
   });
 });

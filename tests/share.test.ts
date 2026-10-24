@@ -6,6 +6,7 @@ import { sumNutrients } from "../src/core/sum.ts";
 import type { Ingredient } from "../src/index.ts";
 import { plain } from "./helpers/decimal.ts";
 import { diagnosticOf } from "./helpers/diagnostic.ts";
+import { per100g } from "./helpers/nutrition.ts";
 
 const fatIn = (ingredients: Ingredient[], grams: string | number = 100) =>
   plain(shareOf(sumNutrients(ingredients, ["fat"]), decimal(String(grams))).nutrients.fat);
@@ -97,6 +98,23 @@ describe("properties of per 100 g", () => {
           expect(Number(diluted)).toBeLessThanOrEqual(Number(fatIn(list)));
         },
       ),
+    );
+  });
+});
+
+// Expected values from Python's decimal module: ROUND_HALF_UP and ROUND_HALF_EVEN differ on a 5.
+describe("every 12-decimal rounding is half up, never half even", () => {
+  test("the division: 2.5e-12 per 100 g reads 3e-12", () => {
+    const { fat } = per100g([
+      { amount: 100, per100g: { fat: "0.000000000005" } },
+      { amount: 100, per100g: {} },
+    ]);
+    expect(fat.exact).toBe("0.000000000003");
+  });
+
+  test("the total: 2.5e-12 g fat in 1 g reads 3e-12 g, so 3e-10 per 100 g", () => {
+    expect(per100g([{ amount: 1, per100g: { fat: "0.00000000025" } }]).fat.exact).toBe(
+      "0.0000000003",
     );
   });
 });

@@ -3,6 +3,7 @@ import { describe, expect, test } from "vite-plus/test";
 import { calculateNutrition, type Ingredient } from "../src/index.ts";
 import { de, en } from "../src/locales/index.ts";
 import { diagnosticOf } from "./helpers/diagnostic.ts";
+import { compare, decimal } from "@thereforejs/decy";
 
 const NBSP = " ";
 
@@ -162,6 +163,111 @@ describe("calculateNutrition: odd numbers everywhere never exceed decy's 30 deci
             { voluntary: ["fibre", "polyols"], locales: [de] },
           ),
         ).not.toThrow();
+      }),
+    );
+  });
+});
+
+describe("input that is not what the types say is refused, never a foreign error", () => {
+  test.each<[string, unknown, string]>([
+    ["no ingredients list", {}, "ingredients"],
+    ["an ingredient that is null", { ingredients: [null] }, "ingredients[0]"],
+    ["an ingredient without per100g", { ingredients: [{ amount: 1 }] }, "ingredients[0].per100g"],
+    [
+      "per100g as an empty list (would read as all 0)",
+      { ingredients: [{ amount: 1, per100g: [] }] },
+      "ingredients[0].per100g",
+    ],
+    ["per100g as a list", { ingredients: [{ amount: 1, per100g: [5] }] }, "ingredients[0].per100g"],
+    ["input that is null", null, "input"],
+    ["input that is a list", [], "input"],
+  ])("%s", (_, input, path) => {
+    expect(diagnosticOf(() => calculateNutrition(input as never))).toMatchObject({
+      code: "input.invalid",
+      path,
+    });
+  });
+});
+
+// SPEC 9.6, through the public function and for every declared nutrient.
+const thousandths = (max: number) => fc.integer({ min: 0, max }).map((n) => n / 1000);
+const ingredient = fc
+  .record({
+    amount: fc.integer({ min: 1, max: 100000 }).map((n) => n / 1000),
+    fat: thousandths(100000),
+    carbohydrate: thousandths(100000),
+    protein: thousandths(100000),
+    fibre: thousandths(100000),
+    sodium: thousandths(39000),
+    share: fc.integer({ min: 0, max: 1000 }),
+  })
+  .filter(({ fat, carbohydrate, protein, fibre }) => fat + carbohydrate + protein + fibre <= 100)
+  .map(({ amount, fat, carbohydrate, protein, fibre, sodium, share }) => ({
+    amount,
+    per100g: {
+      fat,
+      saturates: Math.floor(fat * share) / 1000,
+      carbohydrate,
+      sugars: Math.floor(carbohydrate * share) / 1000,
+      starch: Math.floor(carbohydrate * (1000 - share)) / 1000,
+      protein,
+      fibre,
+      sodium,
+    },
+  }));
+const options = { voluntary: ["starch", "fibre"] as const };
+const exacts = (ingredients: Ingredient[]) => {
+  const { per100g } = calculateNutrition({ ingredients }, { voluntary: [...options.voluntary] });
+  const { energy, ...nutrients } = per100g;
+  return {
+    kJ: energy.kJ.exact,
+    kcal: energy.kcal.exact,
+    ...Object.fromEntries(Object.entries(nutrients).map(([key, value]) => [key, value?.exact])),
+  };
+};
+const recipe = fc.array(ingredient, { minLength: 1, maxLength: 6 });
+
+describe("properties of the declaration, for every nutrient and the energy", () => {
+  test("scaling every amount by the same factor changes nothing", () => {
+    fc.assert(
+      fc.property(recipe, fc.integer({ min: 2, max: 20 }), (list, k) => {
+        const scaled = list.map((item) => ({
+          ...item,
+          amount: Math.round(item.amount * 1000 * k) / 1000,
+        }));
+        expect(exacts(scaled)).toEqual(exacts(list));
+      }),
+    );
+  });
+
+  test("the order of the ingredients changes nothing", () => {
+    fc.assert(
+      fc.property(recipe, (list) => {
+        expect(exacts([...list].reverse())).toEqual(exacts(list));
+      }),
+    );
+  });
+
+  test("splitting an ingredient in two changes nothing", () => {
+    fc.assert(
+      fc.property(recipe, (list) => {
+        const [first, ...rest] = list;
+        const half = { ...first, amount: first.amount / 2 };
+        expect(exacts([half, half, ...rest])).toEqual(exacts(list));
+      }),
+    );
+  });
+
+  test("adding water never raises a value", () => {
+    fc.assert(
+      fc.property(recipe, fc.integer({ min: 1, max: 1000 }), (list, water) => {
+        const before = exacts(list);
+        const after = exacts([...list, { amount: water, per100g: {} }]);
+        for (const [key, value] of Object.entries(after)) {
+          expect(
+            compare(decimal(String(value)), decimal(String(before[key as keyof typeof before]))),
+          ).toBeLessThanOrEqual(0);
+        }
       }),
     );
   });

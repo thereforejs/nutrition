@@ -5,6 +5,7 @@ import { sumNutrients } from "../src/core/sum.ts";
 import type { Ingredient } from "../src/index.ts";
 import { plain } from "./helpers/decimal.ts";
 import { diagnosticOf } from "./helpers/diagnostic.ts";
+import { per100g } from "./helpers/nutrition.ts";
 
 const salt = (ingredients: Ingredient[]) => {
   const { nutrients } = sumNutrients(ingredients, ["salt", "sodium"]);
@@ -196,5 +197,37 @@ describe("properties: salt and sodium convert both ways without loss", () => {
         sameValue(salt([{ amount: 100, per100g: { salt: input } }]).salt, plain(fromNumber(input)));
       }),
     );
+  });
+});
+
+describe("salt is derived from sodium at the very end, so both always agree", () => {
+  test("a salt just above its threshold: sodium is just above its own", () => {
+    const { salt, sodium } = per100g([{ amount: 100, per100g: { salt: "0.012500000001" } }]);
+    expect(salt.negligible).toBe(sodium.negligible);
+  });
+
+  test("property: salt is sodium × 2.5 and both are negligible together (0.0125 g = 0.005 g × 2.5)", () => {
+    const value = fc
+      .tuple(
+        fc.integer({ min: 0, max: 39 }),
+        fc.string({ unit: fc.integer({ min: 0, max: 9 }).map(String), maxLength: 12 }),
+      )
+      .map(([whole, fraction]) => (fraction ? `${whole}.${fraction}` : `${whole}`));
+    fc.assert(
+      fc.property(value, fc.integer({ min: 1, max: 5000 }), (salt, water) => {
+        const result = per100g([
+          { amount: 100, per100g: { salt } },
+          { amount: water, per100g: {} },
+        ]);
+        expect(Number(result.salt.exact)).toBeCloseTo(Number(result.sodium.exact) * 2.5, 10);
+        expect(result.salt.negligible).toBe(result.sodium.negligible);
+      }),
+    );
+  });
+
+  test("sodium and salt given together at 12 decimals agree", () => {
+    expect(() =>
+      per100g([{ amount: 100, per100g: { sodium: "0.000000000001", salt: "0.0000000000025" } }]),
+    ).not.toThrow();
   });
 });
