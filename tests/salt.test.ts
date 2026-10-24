@@ -118,10 +118,11 @@ describe("odd numbers survive the way there and back exactly", () => {
   });
 });
 
-// Up to 4 integer and 12 fraction digits, e.g. "1.8354", "0.000000000007", "9999.999999999999".
+// Up to 2 integer and 12 fraction digits, e.g. "1.8354", "0.000000000007", "99.999999999999".
+// Not above 100: more than 100 g in 100 g is refused (SPEC 3.2).
 const decimalText = fc
   .tuple(
-    fc.integer({ min: 0, max: 9999 }),
+    fc.integer({ min: 0, max: 99 }),
     fc.string({ unit: fc.integer({ min: 0, max: 9 }).map(String), maxLength: 12 }),
   )
   .map(([whole, fraction]) => (fraction ? `${whole}.${fraction}` : `${whole}`));

@@ -1,5 +1,6 @@
 import { add, type Decimal, decimal, multiply } from "@thereforejs/decy";
 import type { Ingredient, NutrientKey, ReportEntry } from "../types/index.ts";
+import { checkPossible } from "./possible.ts";
 import { saltOf, sodiumOf } from "./salt.ts";
 import { toDecimal } from "./value.ts";
 
@@ -28,6 +29,7 @@ export function sumNutrients<K extends NutrientKey>(
     const at = `ingredients[${index}]`;
     const amount = toDecimal(ingredient.amount, `${at}.amount`);
     weight = add(weight, amount);
+    checkPossible(ingredient.per100g, `${at}.per100g`);
     for (const key of keys) {
       const value = valueOf(ingredient.per100g, key, `${at}.per100g`);
       if (value === null) unknown.set(key, [...(unknown.get(key) ?? []), index]);

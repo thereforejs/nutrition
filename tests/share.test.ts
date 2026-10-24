@@ -10,10 +10,10 @@ import { diagnosticOf } from "./helpers/diagnostic.ts";
 const fatIn = (ingredients: Ingredient[], grams: string | number = 100) =>
   plain(shareOf(sumNutrients(ingredients, ["fat"]), decimal(String(grams))).fat);
 
-// A product of the given weight with `fat` grams of fat, all of it in a 1 g ingredient.
+// A product of the given weight with `fat` grams of pure fat, the rest water.
 const product = (fat: number, weight: number): Ingredient[] => [
-  { amount: 1, per100g: { fat: fat * 100 } },
-  { amount: weight - 1, per100g: { fat: 0 } },
+  { amount: fat, per100g: { fat: 100 } },
+  { amount: weight - fat, per100g: { fat: 0 } },
 ];
 
 // Expected values from Python's decimal module (quantize to 1e-12, ROUND_HALF_UP).

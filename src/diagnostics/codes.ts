@@ -18,6 +18,13 @@ export const DIAGNOSTICS = {
     message: (p) =>
       `salt ${p.salt} g is not sodium ${p.sodium} g × 2.5, give one of them or fix it`,
   },
+  "value.above100": {
+    message: () => "more than 100 g in 100 g is impossible",
+  },
+  "value.partExceedsWhole": {
+    source: "Regulation (EU) No 1169/2011, Annex I No 2, 7, 8 and 9",
+    message: (p) => `${p.part} is part of ${p.whole} and cannot be larger`,
+  },
   "value.invalid": {
     message: (p) => `"${p.value}" is no amount, expected a number or decimal text of at least 0`,
   },

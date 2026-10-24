@@ -84,8 +84,14 @@ Voluntary (Art. 30(2)): mono-unsaturates, polyunsaturates, polyols, starch, fibr
     from "forgotten"; a forgotten value is the caller's responsibility like any wrong value.
 - **The caller vouches for the values; the library only checks that they are possible.** It refuses
   only what is impossible or contradicts itself: no valid number, a negative value, salt that is not
-  sodium × 2.5, a product of 0 g, a part larger than its whole (sugars above carbohydrate, saturates
-  above fat, polyols above carbohydrate), more than 100 g of a nutrient in 100 g.
+  sodium × 2.5, a product of 0 g, a part larger than its whole, more than 100 g of a nutrient in
+  100 g:
+  - Parts and wholes after Annex I: sugars, starch, polyols in carbohydrate; erythritol in polyols;
+    saturates, mono-, polyunsaturates and salatrims in fat. Each part on its own: a sum of parts that
+    were rounded by Table 4 may exceed its rounded whole (3.35 + 3.35 + 3.25 g of 9.95 g fat read
+    3.4 + 3.4 + 3.3 of 10.0), so sums are not compared. An unknown (`null`) whole is not compared.
+  - Salt may exceed 100 g: it is sodium × 2.5, an equivalent, not a mass. Solid sodium hydroxide for
+    pretzels has 57.5 g sodium, 143.75 g salt per 100 g.
 - **Sodium or salt**, per ingredient, whichever the source provides. Both are allowed only when they
   agree exactly (salt = sodium × 2.5); otherwise it is an error.
 - Which voluntary nutrients appear in the output is an explicit choice of the caller, never derived
