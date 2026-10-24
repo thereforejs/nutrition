@@ -1,17 +1,7 @@
 import { toDecimalString } from "@thereforejs/decy";
 import { describe, expect, test } from "vite-plus/test";
 import { toDecimal } from "../src/core/value.ts";
-import { DiagnosticError, type Diagnostic } from "../src/index.ts";
-
-function diagnosticOf(run: () => unknown): Diagnostic {
-  try {
-    run();
-  } catch (error) {
-    if (error instanceof DiagnosticError && error.diagnostics[0]) return error.diagnostics[0];
-    throw error;
-  }
-  throw new Error("expected a DiagnosticError");
-}
+import { diagnosticOf } from "./helpers/diagnostic.ts";
 
 describe("values come in as number or decimal string and are read exactly", () => {
   test.each<[number | string, string]>([
