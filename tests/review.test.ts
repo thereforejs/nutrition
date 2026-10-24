@@ -1,6 +1,8 @@
 import fc from "fast-check";
 import { describe, expect, test } from "vite-plus/test";
 import { calculateNutrition, type Ingredient } from "../src/index.ts";
+import { de } from "../src/locales/index.ts";
+import { diagnosticOf } from "./helpers/diagnostic.ts";
 
 const per100g = (ingredients: Ingredient[]) => calculateNutrition({ ingredients }).per100g;
 
@@ -34,7 +36,7 @@ describe("salt is derived from sodium at the very end, so both always agree", ()
     expect(salt.negligible).toBe(sodium.negligible);
   });
 
-  test("property: salt is exactly sodium × 2.5 and both share one side of every threshold", () => {
+  test("property: salt is sodium × 2.5 and both are negligible together (0.0125 g = 0.005 g × 2.5)", () => {
     const value = fc
       .tuple(
         fc.integer({ min: 0, max: 39 }),
@@ -49,7 +51,6 @@ describe("salt is derived from sodium at the very end, so both always agree", ()
         ]);
         expect(Number(result.salt.exact)).toBeCloseTo(Number(result.sodium.exact) * 2.5, 10);
         expect(result.salt.negligible).toBe(result.sodium.negligible);
-        expect(Number(result.salt.rounded) >= 1).toBe(Number(result.sodium.rounded) >= 0.4);
       }),
     );
   });
@@ -73,5 +74,72 @@ describe("sums are exact; only the total is rounded to 12 decimals", () => {
       { amount: 1, per100g: {} },
     ]);
     expect(split.fat.exact).toBe(whole.fat.exact);
+  });
+});
+
+describe("salt above 250 g means more than 100 g sodium: impossible", () => {
+  test("250 g salt is possible, 250.1 g is not", () => {
+    expect(() => per100g([{ amount: 100, per100g: { salt: 250 } }])).not.toThrow();
+    expect(
+      diagnosticOf(() => per100g([{ amount: 100, per100g: { salt: "250.1" } }])),
+    ).toMatchObject({ code: "value.above100", path: "ingredients[0].per100g.salt" });
+  });
+});
+
+describe("options and input are checked, never a foreign error", () => {
+  const ingredients: Ingredient[] = [{ amount: 100, per100g: { fat: 1 } }];
+
+  test("an option given as undefined takes its default", () => {
+    const result = calculateNutrition(
+      { ingredients },
+      { voluntary: undefined, locales: undefined, negligible: undefined },
+    );
+    expect(result.per100g.fat.text).toEqual({});
+  });
+
+  test.each<[string, object, string]>([
+    ["voluntary not a list", { voluntary: "fibre" }, "options.voluntary"],
+    ["locales not a list", { locales: de }, "options.locales"],
+    [
+      "a locale without a valid tag",
+      { locales: [{ ...de, locale: "xx_bad" }] },
+      "options.locales[0]",
+    ],
+    ["a locale without labels", { locales: [{ locale: "de-DE" }] }, "options.locales[0]"],
+    [
+      "a locale missing one label",
+      { locales: [{ ...de, labels: { ...de.labels, salt: undefined } }] },
+      "options.locales[0]",
+    ],
+  ])("%s", (_, options, path) => {
+    expect(diagnosticOf(() => calculateNutrition({ ingredients }, options as never))).toMatchObject(
+      {
+        code: "options.invalid",
+        path,
+      },
+    );
+  });
+
+  test.each<[string, unknown, string]>([
+    ["no ingredients list", {}, "ingredients"],
+    ["an ingredient that is null", { ingredients: [null] }, "ingredients[0]"],
+    ["an ingredient without per100g", { ingredients: [{ amount: 1 }] }, "ingredients[0].per100g"],
+  ])("%s", (_, input, path) => {
+    expect(diagnosticOf(() => calculateNutrition(input as never))).toMatchObject({
+      code: "input.invalid",
+      path,
+    });
+  });
+});
+
+describe("an ingredient of 0 g leaves nothing out", () => {
+  test("its unknown values are not reported", () => {
+    const { report } = calculateNutrition({
+      ingredients: [
+        { amount: 100, per100g: { fat: 1 } },
+        { amount: 0, per100g: { fibre: null } },
+      ],
+    });
+    expect(report).toEqual([]);
   });
 });

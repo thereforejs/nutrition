@@ -181,9 +181,9 @@ describe("properties: salt and sodium convert both ways without loss", () => {
     );
   });
 
-  test("any JavaScript number is accepted and lands on at most 12 decimals", () => {
+  test("any possible JavaScript number (salt up to 250 g) lands on at most 12 decimals", () => {
     fc.assert(
-      fc.property(fc.double({ min: 0, max: 10000, noNaN: true }), (input) => {
+      fc.property(fc.double({ min: 0, max: 250, noNaN: true }), (input) => {
         const { salt: value } = salt([{ amount: 100, per100g: { salt: input } }]);
         expect(value).toMatch(/^\d+(\.\d{1,12})?$/);
       }),

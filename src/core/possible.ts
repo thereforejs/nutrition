@@ -18,13 +18,16 @@ const PARTS: [part: NutrientKey, whole: NutrientKey][] = [
 ];
 
 const HUNDRED = decimal("100");
+const SALT_LIMIT = decimal("250");
 
 /** Refuses what cannot be (SPEC 3.2). Whether a possible value is right is the caller's word. */
 export function checkPossible(per100g: Ingredient["per100g"], at: string) {
   for (const [key, value] of Object.entries(per100g)) {
-    // Salt is sodium × 2.5, an equivalent, not a mass: solid sodium hydroxide has 143.75 g.
-    if (key === "salt" || value == null) continue;
-    if (compare(toDecimal(value, `${at}.${key}`), HUNDRED) > 0)
+    if (value == null) continue;
+    // Salt is sodium × 2.5, an equivalent, not a mass: solid sodium hydroxide has 143.75 g. Its
+    // limit is 100 g of sodium.
+    const limit = key === "salt" ? SALT_LIMIT : HUNDRED;
+    if (compare(toDecimal(value, `${at}.${key}`), limit) > 0)
       fail("value.above100", `${at}.${key}`);
   }
   for (const [part, whole] of PARTS) {

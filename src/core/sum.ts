@@ -1,4 +1,5 @@
-import { add, type Decimal, decimal, multiply, round } from "@thereforejs/decy";
+import { add, type Decimal, decimal, isZero, multiply, round } from "@thereforejs/decy";
+import { fail } from "../diagnostics/fail.ts";
 import type { Ingredient, NutrientKey, ReportEntry } from "../types/index.ts";
 import { ENERGY_KEYS, type EnergyKey, energyOf } from "./energy.ts";
 import { checkPossible } from "./possible.ts";
@@ -29,16 +30,24 @@ export function sumNutrients<K extends NutrientKey>(
   >;
   let energy = { kJ: decimal("0"), kcal: decimal("0") };
   const unknown = new Map<K, number[]>();
+  // Plain JavaScript or JSON can pass anything; a foreign TypeError would name nothing.
+  if (!Array.isArray(ingredients)) fail("input.invalid", "ingredients");
   ingredients.forEach((ingredient, index) => {
     const at = `ingredients[${index}]`;
+    if (typeof ingredient !== "object" || ingredient === null) fail("input.invalid", at);
+    if (typeof ingredient.per100g !== "object" || ingredient.per100g === null) {
+      fail("input.invalid", `${at}.per100g`);
+    }
     const amount = toDecimal(ingredient.amount, `${at}.amount`);
     const grams = (value: Decimal) => multiply(multiply(amount, value), PER_GRAM);
     weight = add(weight, amount);
     checkPossible(ingredient.per100g, `${at}.per100g`);
     for (const key of keys) {
       const value = valueOf(ingredient.per100g, key, `${at}.per100g`);
-      if (value === null) unknown.set(key, [...(unknown.get(key) ?? []), index]);
-      else nutrients[key] = add(nutrients[key], grams(value));
+      // An ingredient of 0 g leaves nothing out, so its unknowns are not reported.
+      if (value === null) {
+        if (!isZero(amount)) unknown.set(key, [...(unknown.get(key) ?? []), index]);
+      } else nutrients[key] = add(nutrients[key], grams(value));
     }
     const parts = Object.fromEntries(
       ENERGY_KEYS.map((key) => [key, valueOf(ingredient.per100g, key, `${at}.per100g`)]),

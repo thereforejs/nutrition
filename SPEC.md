@@ -91,7 +91,11 @@ Voluntary (Art. 30(2)): mono-unsaturates, polyunsaturates, polyols, starch, fibr
     were rounded by Table 4 may exceed its rounded whole (3.35 + 3.35 + 3.25 g of 9.95 g fat read
     3.4 + 3.4 + 3.3 of 10.0), so sums are not compared. An unknown (`null`) whole is not compared.
   - Salt may exceed 100 g: it is sodium × 2.5, an equivalent, not a mass. Solid sodium hydroxide for
-    pretzels has 57.5 g sodium, 143.75 g salt per 100 g.
+    pretzels has 57.5 g sodium, 143.75 g salt per 100 g. Its limit is 250 g, which is 100 g sodium.
+  - An ingredient of 0 g leaves nothing out: its unknown values are not reported.
+- **Input and options that are not what the types say** (plain JavaScript, JSON) are refused with
+  `input.invalid` or `options.invalid` and the path, never with a foreign error. An option given as
+  `undefined` takes its default.
 - **Sodium or salt**, per ingredient, whichever the source provides. Both are allowed only when they
   agree exactly (salt = sodium × 2.5); otherwise it is an error.
 - Which voluntary nutrients appear in the output is an explicit choice of the caller, never derived

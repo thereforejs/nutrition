@@ -7,6 +7,9 @@ export interface Rule {
 
 /** Every diagnostic nutrition can raise. Codes are stable; apps translate them, not the messages. */
 export const DIAGNOSTICS = {
+  "input.invalid": {
+    message: () => "expected { ingredients: [{ amount, per100g: { ... } }] }",
+  },
   "options.invalid": {
     message: (p) => `"${p.value}" is not an allowed value`,
   },
@@ -25,7 +28,8 @@ export const DIAGNOSTICS = {
       `salt ${p.salt} g is not sodium ${p.sodium} g × 2.5, give one of them or fix it`,
   },
   "value.above100": {
-    message: () => "more than 100 g in 100 g is impossible",
+    message: () =>
+      "more than 100 g in 100 g is impossible (salt: more than 250 g, which is 100 g sodium)",
   },
   "value.partExceedsWhole": {
     source: "Regulation (EU) No 1169/2011, Annex I No 2, 7, 8 and 9",
