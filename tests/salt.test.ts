@@ -43,7 +43,7 @@ describe("salt or sodium per ingredient, both in the result (Annex I No 11)", ()
   });
 });
 
-describe("salt and sodium that disagree, or neither, refuse the result", () => {
+describe("salt and sodium that disagree refuse the result; unknown is reported", () => {
   test("both, disagreeing", () => {
     expect(
       diagnosticOf(() => salt([{ amount: 100, per100g: { salt: "1.2", sodium: "0.5" } }])),
@@ -55,13 +55,34 @@ describe("salt and sodium that disagree, or neither, refuse the result", () => {
     });
   });
 
+  test("neither given: 0, nothing reported", () => {
+    const { nutrients, report } = sumNutrients([{ amount: 100, per100g: {} }], ["salt", "sodium"]);
+    expect([plain(nutrients.salt), plain(nutrients.sodium)]).toEqual(["0", "0"]);
+    expect(report).toEqual([]);
+  });
+
   test.each<[string, Ingredient["per100g"]]>([
-    ["neither", {}],
     ["both null", { salt: null, sodium: null }],
-  ])("%s", (_, per100g) => {
-    expect(diagnosticOf(() => salt([{ amount: 100, per100g }]))).toMatchObject({
-      code: "value.missing",
-      path: "ingredients[0].per100g.salt",
+    ["salt null", { salt: null }],
+    ["sodium null", { sodium: null }],
+  ])("%s: unknown, reported for salt and sodium", (_, per100g) => {
+    const { report } = sumNutrients(
+      [
+        { amount: 100, per100g: { sodium: 1 } },
+        { amount: 100, per100g },
+      ],
+      ["salt", "sodium"],
+    );
+    expect(report).toEqual([
+      { code: "value.missing", nutrient: "salt", ingredients: [1] },
+      { code: "value.missing", nutrient: "sodium", ingredients: [1] },
+    ]);
+  });
+
+  test("one null, the other given: the given one counts", () => {
+    expect(salt([{ amount: 100, per100g: { salt: null, sodium: "0.4" } }])).toEqual({
+      salt: "1",
+      sodium: "0.4",
     });
   });
 

@@ -39,25 +39,32 @@ describe("every ingredient adds amount × value / 100 (Art. 31(4)(b))", () => {
   });
 });
 
-describe("a requested value missing in any ingredient refuses the result", () => {
-  test("missing in the second ingredient", () => {
-    expect(
-      diagnosticOf(() =>
-        sumNutrients([flour, { amount: 600, per100g: { fat: 0 } }], ["fat", "protein"]),
-      ),
-    ).toMatchObject({
-      code: "value.missing",
-      level: "error",
-      path: "ingredients[1].per100g.protein",
-    });
+// SPEC 3.2: 0 is none, a missing key is 0, null is unknown: calculated without it and reported.
+describe("0, a missing key and null", () => {
+  test("0 and a missing key count as 0, nothing reported", () => {
+    const totals = sumNutrients([flour, { amount: 600, per100g: { fat: 0 } }], ["fat", "protein"]);
+    expect(text(totals).nutrients).toEqual({ fat: "12", protein: "100" });
+    expect(totals.report).toEqual([]);
   });
 
-  test("null is missing, never 0", () => {
-    expect(
-      diagnosticOf(() => sumNutrients([{ amount: 1, per100g: { fat: null } }], ["fat"])),
-    ).toMatchObject({ code: "value.missing", path: "ingredients[0].per100g.fat" });
+  test("null is calculated without and reported with its ingredients", () => {
+    const totals = sumNutrients(
+      [
+        { amount: 100, per100g: { fat: 1, protein: null } },
+        flour,
+        { amount: 100, per100g: { fat: null, protein: null } },
+      ],
+      ["fat", "protein"],
+    );
+    expect(text(totals).nutrients).toEqual({ fat: "13", protein: "100" });
+    expect(totals.report).toEqual([
+      { code: "value.missing", nutrient: "fat", ingredients: [2] },
+      { code: "value.missing", nutrient: "protein", ingredients: [0, 2] },
+    ]);
   });
+});
 
+describe("invalid input refuses the result", () => {
   test("an invalid amount names its ingredient", () => {
     expect(
       diagnosticOf(() => sumNutrients([flour, { ...water, amount: -1 }], ["fat"])),

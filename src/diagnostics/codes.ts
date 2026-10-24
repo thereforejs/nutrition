@@ -11,7 +11,7 @@ export const DIAGNOSTICS = {
     message: () => "the product weighs 0 g, there is nothing to calculate per 100 g",
   },
   "value.missing": {
-    message: () => "the value is missing; unknown is never read as 0",
+    message: () => "the value is unknown (null), calculated without it",
   },
   "salt.sodiumMismatch": {
     source: "Regulation (EU) No 1169/2011, Annex I No 11",

@@ -16,7 +16,8 @@ per 100 g, and returns:
 
 1. the **nutrition declaration** per 100 g, and per piece when a piece weight is given;
 2. per nutrient the **exact value**, the **rounded value** and the **display text**;
-3. **diagnostics**: every refusal and every warning with a stable code and the path to the cause.
+3. a **report** of everything the calculation went on without, and errors with a stable code and the
+   path to the cause.
 
 It works with values from any source: a supplier's specification, a lab report, or a food composition
 database such as the optional data package (section 8).
@@ -25,7 +26,7 @@ database such as the optional data package (section 8).
 
 - a recipe resolver. Nested recipes, baking loss, water loss and dough leftovers are resolved before
   the library is called. Its input is a flat list in final grams (section 3.1);
-- an estimator. A missing value is an error, never a default and never a guess;
+- an estimator. It never fills a gap with a guess (section 3.2);
 - a label layout, a printer or a network client;
 - a part of [foodlabel](https://github.com/thereforejs/foodlabel). Neither library depends on the other;
   an application connects them.
@@ -41,7 +42,8 @@ database such as the optional data package (section 8).
   that guesses is wrong, every user is wrong at once.
 - **Rules are data with their source.** Every energy factor, conversion and rounding step names its
   regulation, article or annex. A rule without a source does not exist.
-- **Errors refuse the whole result**, warnings travel with it. No half output.
+- **Errors refuse the whole result**; what the calculation went on without travels with it in the
+  report. No half output.
 - **Pure and deterministic.** Same input, same output, in Node and in every browser. No I/O.
 - **Tree-shakable** (section 7). An application pays only for the languages and data it imports.
 
@@ -73,8 +75,17 @@ Voluntary (Art. 30(2)): mono-unsaturates, polyunsaturates, polyols, starch, fibr
 
 - **Energy is never input.** It is calculated from the nutrients (section 4.2), so there is only one
   truth.
-- A nutrient that the declaration needs must be present in every ingredient. A missing value is an
-  error with the path to the ingredient. Water is passed with explicit zeros.
+- **What a value says** is decided by what the source sends, never by the library, which knows no
+  foods:
+  - `0`: the source says there is none. Calculated with 0.
+  - `null`: the source says the value is unknown (the BLS marks such gaps, section 8). Calculated
+    without it, listed in the report as `value.missing` (section 6).
+  - key missing: the source says nothing. Calculated with 0. The library cannot tell "there is none"
+    from "forgotten"; a forgotten value is the caller's responsibility like any wrong value.
+- **The caller vouches for the values; the library only checks that they are possible.** It refuses
+  only what is impossible or contradicts itself: no valid number, a negative value, salt that is not
+  sodium × 2.5, a product of 0 g, a part larger than its whole (sugars above carbohydrate, saturates
+  above fat, polyols above carbohydrate), more than 100 g of a nutrient in 100 g.
 - **Sodium or salt**, per ingredient, whichever the source provides. Both are allowed only when they
   agree exactly (salt = sodium × 2.5); otherwise it is an error.
 - Which voluntary nutrients appear in the output is an explicit choice of the caller, never derived
@@ -130,7 +141,22 @@ kJ and kcal each with their own factors, never converted into each other:
 | Fibre                         |    8 |      2 |
 | Erythritol                    |    0 |      0 |
 
-Energy is calculated from the unrounded nutrients.
+Energy is calculated from the unrounded nutrients, and from every component the data has, whether
+the table shows it or not: the factors apply to "the energy value to be declared", not only to
+declared nutrients. Fibre in a wholemeal bread counts even when the label shows only the mandatory
+nutrients.
+
+Each gram meets exactly one factor. The values are given as declared, so the parts are taken out of
+their wholes (Annex I: carbohydrate "includes polyols", erythritol is a polyol by the definition of
+polyols, fat means "total lipids"):
+
+```
+(carbohydrate - polyols) × 17 + (polyols - erythritol) × 10 + erythritol × 0
+  + protein × 17 + (fat - salatrims) × 37 + salatrims × 25
+  + alcohol × 29 + organic acids × 13 + fibre × 8          (kJ; kcal likewise)
+```
+
+Annex XIV and the definitions of Annex I are unchanged in the consolidated text of 1 April 2025.
 
 ### 4.3 Salt (Annex I No 11)
 
@@ -175,7 +201,7 @@ three.
 - Per nutrient: `exact`, `rounded`, `text` (in every imported locale).
 - Salt and sodium are both always in the result; the mandatory declaration shows salt (Art. 30(1)(b)).
   What an application displays is its choice.
-- Diagnostics (section 6) alongside.
+- The report (section 6) alongside.
 
 ---
 
@@ -183,12 +209,16 @@ three.
 
 One module, one catalogue of stable codes. Each diagnostic: `{ code, level, path, params, source }`.
 
-- `level`: `"error"` refuses the whole result; `"warning"` travels with it.
+- `level`: `"error"` refuses the whole result.
 - `path`: into the input, e.g. `ingredients[2].per100g.fat` or `options.locales`.
 - `source`: the regulation, article or annex when a rule is the reason.
 - Every throw goes through one `fail(code, path, params)`.
 
 The catalogue grows with the rules; each code arrives with its test.
+
+**The report** lists everything the calculation went on without, grouped by code and nutrient, so it
+reads "2 ingredients without fibre": `{ code, nutrient, ingredients }`, `ingredients` being positions in
+the input list. Every code that can appear in it is explained in the README (meaning, what to do).
 
 ---
 
@@ -241,7 +271,8 @@ Every rule gets a red test before the code and a sabotage probe after.
 2. **Non-terminating quotients:** product weights of 300 g and 700 g give 12 decimals, half up.
 3. **Energy** per factor of Annex XIV, kJ and kcal independently.
 4. **Salt and sodium**: either input, both agreeing, both disagreeing (error).
-5. **Missing values**: every required nutrient missing in one ingredient gives its error and path.
+5. **Missing values**: `0`, `null` and a missing key, each with its result; `null` in the report
+   and path. Every impossible input of 3.2 with its error.
 6. **Properties** (fast-check, seeds kept once they failed):
    - scaling every amount by the same factor does not change the values per 100 g;
    - the order of the ingredients does not change the result;
@@ -264,6 +295,9 @@ Every rule gets a red test before the code and a sabotage probe after.
 - Values per 100 g and per piece carry 12 decimals; nobody gains from the 124th (2026-10-24).
 - The text keeps trailing zeros of its rounding step: "2,0 g", not "2 g" (2026-10-24).
 - Input values: number or decimal text, more than 12 decimals rounded half up to 12 (2026-10-24).
+- `0` is none, `null` is unknown (calculated without, reported), a missing key is 0. Errors only for
+  impossible or contradicting input; the caller vouches for the values (2026-10-24).
+- Energy counts every component in the data, declared or not (Annex XIV, 2026-10-24).
 - License MIT.
 
 ---
@@ -273,8 +307,7 @@ Every rule gets a red test before the code and a sabotage probe after.
 1. **BLS 4.0 license:** the imprint of blsdb.de still carries an old "private use only" notice for web
    documents; the download page puts the data under CC BY 4.0. A written confirmation from the Max
    Rubner-Institut settles it before the data package is published.
-2. **Energy:** must organic acids (e.g. from sourdough) and fibre enter the energy when they are not
-   declared?
+2. ~~Energy of nutrients not declared~~: decided 2026-10-24, they count (4.2).
 3. **Rounding at the boundary:** does 9.96 g fat read "10 g" or "10,0 g"? And the meaning of the footnote
    "not applicable to sub-categories" in Table 4.
 4. **Rounding per piece:** does Table 4 apply to values per piece as it does per 100 g?
@@ -282,9 +315,9 @@ Every rule gets a red test before the code and a sabotage probe after.
    precise value such as "0,3 g" fat may be declared instead is not stated.
 6. **`<LOD`, `<LOQ`, `TR` in the data:** neither zero nor missing. The library does not pick a reading;
    the question is what the caller must state.
-7. **Polyols, erythritol and salatrims as input fields:** whether "polyols" includes erythritol and
-   "fat" includes salatrims, so that each gram meets exactly one factor of Annex XIV. The BLS sums
-   polyols as mannitol, sorbitol and xylitol.
+7. **Salatrims:** Annex XIV does not say "fat (except salatrims)". Until settled, fat is read as total
+   lipids including salatrims (Annex I No 2), like carbohydrate including polyols. Polyols and
+   erythritol are settled by Annex I (4.2).
 8. **Exemption for small businesses (Annex V No 19):** the current interpretation. It decides whether a
    declaration is needed at all, which is the application's question, but the documentation should
    name it.

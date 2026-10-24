@@ -5,5 +5,6 @@ export type {
   DiagnosticParams,
   Ingredient,
   NutrientKey,
+  ReportEntry,
   Value,
 } from "./types/index.ts";
