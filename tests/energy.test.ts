@@ -5,6 +5,7 @@ import { shareOf } from "../src/core/share.ts";
 import { sumNutrients } from "../src/core/sum.ts";
 import type { Ingredient } from "../src/index.ts";
 import { plain } from "./helpers/decimal.ts";
+import { per100g } from "./helpers/nutrition.ts";
 
 const energy = (per100g: Ingredient["per100g"], amount: number | string = 100) => {
   const totals = sumNutrients([{ amount, per100g }], ENERGY_KEYS);
@@ -68,5 +69,28 @@ describe("a part the data does not have counts as nothing", () => {
       ENERGY_KEYS,
     );
     expect(report).toEqual([{ code: "value.missing", nutrient: "fibre", ingredients: [0] }]);
+  });
+});
+
+describe("energy takes each part out of its own ingredient's whole", () => {
+  test("carbohydrate unknown, polyols known: the polyols count, nothing is subtracted", () => {
+    // 50 × 10 = 500 kJ; 50 × 2.4 = 120 kcal (was -350 kJ)
+    const { energy } = per100g([{ amount: 100, per100g: { carbohydrate: null, polyols: 50 } }]);
+    expect([energy.kJ.exact, energy.kcal.exact]).toEqual(["500", "120"]);
+  });
+
+  test("fat unknown, salatrims known", () => {
+    // 10 × 25 = 250 kJ; 10 × 6 = 60 kcal
+    const { energy } = per100g([{ amount: 100, per100g: { fat: null, salatrims: 10 } }]);
+    expect([energy.kJ.exact, energy.kcal.exact]).toEqual(["250", "60"]);
+  });
+
+  test("cocoa with maltitol whose carbohydrate is unknown", () => {
+    // 36 × 17 + 24 × 37 + 39.6 × 10 = 1896 kJ; 36 × 4 + 24 × 9 + 39.6 × 2.4 = 455.04 kcal
+    const { energy } = per100g([
+      { amount: 60, per100g: { carbohydrate: 60, fat: 40, protein: 0, sugars: 0 } },
+      { amount: 40, per100g: { carbohydrate: null, polyols: 99 } },
+    ]);
+    expect([energy.kJ.exact, energy.kcal.exact]).toEqual(["1896", "455.04"]);
   });
 });

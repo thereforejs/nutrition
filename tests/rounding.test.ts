@@ -56,3 +56,21 @@ describe("energy: whole kJ and kcal, never negligible", () => {
     expect(round(key, value)).toEqual({ rounded, negligible: false });
   });
 });
+
+// Table 4: between 0.1 and 0.5 g the macronutrients are negligible, the fatty acids are not.
+describe("each nutrient sits in its own band of Table 4", () => {
+  test.each<[Declared, boolean]>([
+    ["fat", true],
+    ["carbohydrate", true],
+    ["sugars", true],
+    ["polyols", true],
+    ["starch", true],
+    ["fibre", true],
+    ["protein", true],
+    ["saturates", false],
+    ["monounsaturates", false],
+    ["polyunsaturates", false],
+  ])("%s at 0.3 g: negligible %s", (key, negligible) => {
+    expect(roundOf(key, decimal("0.3")).negligible).toBe(negligible);
+  });
+});

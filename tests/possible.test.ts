@@ -2,6 +2,8 @@ import { describe, expect, test } from "vite-plus/test";
 import { sumNutrients } from "../src/core/sum.ts";
 import type { Ingredient, NutrientKey } from "../src/index.ts";
 import { diagnosticOf } from "./helpers/diagnostic.ts";
+import { per100g } from "./helpers/nutrition.ts";
+import { calculateNutrition } from "../src/index.ts";
 
 const run = (per100g: Ingredient["per100g"], keys: NutrientKey[] = ["fat"]) =>
   sumNutrients(
@@ -72,5 +74,33 @@ describe("more than 100 g in 100 g refuses the result", () => {
 
   test("checked even when the nutrient is not requested", () => {
     expect(diagnosticOf(() => run({ protein: 101 }, ["fat"])).code).toBe("value.above100");
+  });
+});
+
+describe("salt above 250 g means more than 100 g sodium: impossible", () => {
+  test("250 g salt is possible, 250.1 g is not", () => {
+    expect(() => per100g([{ amount: 100, per100g: { salt: 250 } }])).not.toThrow();
+    expect(
+      diagnosticOf(() => per100g([{ amount: 100, per100g: { salt: "250.1" } }])),
+    ).toMatchObject({ code: "value.above100", path: "ingredients[0].per100g.salt" });
+  });
+});
+
+describe("a key that is not a nutrient refuses the result with its own code", () => {
+  test.each<[string, Record<string, unknown>]>([
+    ["a typo", { fats: 1.2, protein: 10 }],
+    ["energy, which is never input", { fat: 1, energy: 400 }],
+    ["a note", { fat: 1, note: "x" }],
+  ])("%s", (_, values) => {
+    const key = Object.keys(values).find((k) => !["fat", "protein"].includes(k));
+    expect(
+      diagnosticOf(() =>
+        calculateNutrition({ ingredients: [{ amount: 100, per100g: values as never }] }),
+      ),
+    ).toMatchObject({
+      code: "value.unknownKey",
+      path: `ingredients[0].per100g.${key}`,
+      params: { key },
+    });
   });
 });
