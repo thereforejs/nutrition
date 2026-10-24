@@ -31,6 +31,7 @@
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.mjs",
+    "./locales": "./dist/locales/index.mjs",
     "./package.json": "./package.json"
   },
   "publishConfig": {

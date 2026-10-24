@@ -1,0 +1,19 @@
+{
+  "locale": "en-GB",
+  "labels": {
+    "energy": "energy",
+    "fat": "fat",
+    "ofWhich": "of which",
+    "saturates": "saturates",
+    "monounsaturates": "mono-unsaturates",
+    "polyunsaturates": "polyunsaturates",
+    "carbohydrate": "carbohydrate",
+    "sugars": "sugars",
+    "polyols": "polyols",
+    "starch": "starch",
+    "fibre": "fibre",
+    "protein": "protein",
+    "salt": "salt",
+    "sodium": "sodium"
+  }
+}

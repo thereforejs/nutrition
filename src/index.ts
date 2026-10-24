@@ -4,6 +4,8 @@ export type {
   DiagnosticCode,
   DiagnosticParams,
   Ingredient,
+  Label,
+  Locale,
   NutrientKey,
   ReportEntry,
   Value,

@@ -5,6 +5,7 @@ export default defineConfig({
     "*": "vp check --fix",
   },
   pack: {
+    entry: ["src/index.ts", "src/locales/index.ts"],
     dts: {
       generator: "tsgo",
     },

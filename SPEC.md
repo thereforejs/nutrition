@@ -115,7 +115,13 @@ import { de } from "@thereforejs/nutrition/locales";
 calculateNutrition(input, { locales: [de] });
 ```
 
-Only imported locales reach a bundle (section 7). German and English ship from the start.
+Only imported locales reach a bundle (section 7, verified on the built package). German and English
+ship from the start. The labels are the words of Annex XV in each language (consolidated 1.4.2025);
+sodium, not in Annex XV, is named as in Annex I No 11. German reads "Energie" as Annex XV does, though
+Art. 30 to 32 say "Brennwert"; an application that wants "Brennwert" overrides that one label:
+`{ ...de, labels: { ...de.labels, energy: "Brennwert" } }`.
+
+The text keeps number and unit on one line (no-break space) and never groups thousands ("1431 kJ").
 
 ---
 
@@ -299,6 +305,7 @@ Every rule gets a red test before the code and a sabotage probe after.
 - Data in a separate package, split by BLS main food group; German and English names (2026-10-24).
 - Rounding half up, calculated at 12 decimals, energy from the values before display rounding.
 - Values per 100 g and per piece carry 12 decimals; nobody gains from the 124th (2026-10-24).
+- German labels as Annex XV words them, "Energie" for energy (2026-10-24).
 - The rounding step follows the amount itself: 9.96 g fat reads "10,0 g" (Table 4, 2026-10-24).
 - The text keeps trailing zeros of its rounding step: "2,0 g", not "2 g" (2026-10-24).
 - Input values: number or decimal text, more than 12 decimals rounded half up to 12 (2026-10-24).
