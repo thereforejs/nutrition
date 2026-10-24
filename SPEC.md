@@ -93,6 +93,8 @@ Voluntary (Art. 30(2)): mono-unsaturates, polyunsaturates, polyols, starch, fibr
   - Salt may exceed 100 g: it is sodium × 2.5, an equivalent, not a mass. Solid sodium hydroxide for
     pretzels has 57.5 g sodium, 143.75 g salt per 100 g. Its limit is 250 g, which is 100 g sodium.
   - An ingredient of 0 g leaves nothing out: its unknown values are not reported.
+  - A key that is not a nutrient (`fats`, `energy`, `note`) is refused with `value.unknownKey`: as
+    a missing key it would count as 0, a silent wrong number.
 - **Input and options that are not what the types say** (plain JavaScript, JSON) are refused with
   `input.invalid` or `options.invalid` and the path, never with a foreign error. An option given as
   `undefined` takes its default.

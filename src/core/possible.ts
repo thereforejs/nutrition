@@ -17,12 +17,34 @@ const PARTS: [part: NutrientKey, whole: NutrientKey][] = [
   ["salatrims", "fat"],
 ];
 
+// Every nutrient the library knows; TypeScript fails here when NutrientKey grows.
+const NUTRIENTS: Record<NutrientKey, true> = {
+  fat: true,
+  saturates: true,
+  monounsaturates: true,
+  polyunsaturates: true,
+  carbohydrate: true,
+  sugars: true,
+  polyols: true,
+  starch: true,
+  fibre: true,
+  protein: true,
+  salt: true,
+  sodium: true,
+  alcohol: true,
+  organicAcids: true,
+  erythritol: true,
+  salatrims: true,
+};
+
 const HUNDRED = decimal("100");
 const SALT_LIMIT = decimal("250");
 
 /** Refuses what cannot be (SPEC 3.2). Whether a possible value is right is the caller's word. */
 export function checkPossible(per100g: Ingredient["per100g"], at: string) {
   for (const [key, value] of Object.entries(per100g)) {
+    // A typo ("fats") would otherwise count as a missing key, that is 0 g fat: a silent wrong number.
+    if (!Object.hasOwn(NUTRIENTS, key)) fail("value.unknownKey", `${at}.${key}`, { key });
     if (value == null) continue;
     // Salt is sodium × 2.5, an equivalent, not a mass: solid sodium hydroxide has 143.75 g. Its
     // limit is 100 g of sodium.

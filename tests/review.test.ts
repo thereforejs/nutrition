@@ -143,3 +143,22 @@ describe("an ingredient of 0 g leaves nothing out", () => {
     expect(report).toEqual([]);
   });
 });
+
+describe("a key that is not a nutrient refuses the result with its own code", () => {
+  test.each<[string, Record<string, unknown>]>([
+    ["a typo", { fats: 1.2, protein: 10 }],
+    ["energy, which is never input", { fat: 1, energy: 400 }],
+    ["a note", { fat: 1, note: "x" }],
+  ])("%s", (_, values) => {
+    const key = Object.keys(values).find((k) => !["fat", "protein"].includes(k));
+    expect(
+      diagnosticOf(() =>
+        calculateNutrition({ ingredients: [{ amount: 100, per100g: values as never }] }),
+      ),
+    ).toMatchObject({
+      code: "value.unknownKey",
+      path: `ingredients[0].per100g.${key}`,
+      params: { key },
+    });
+  });
+});

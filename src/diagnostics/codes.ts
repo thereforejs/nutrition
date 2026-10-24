@@ -35,6 +35,9 @@ export const DIAGNOSTICS = {
     source: "Regulation (EU) No 1169/2011, Annex I No 2, 7, 8 and 9",
     message: (p) => `${p.part} is part of ${p.whole} and cannot be larger`,
   },
+  "value.unknownKey": {
+    message: (p) => `"${p.key}" is no nutrient this library knows (energy is never input)`,
+  },
   "value.invalid": {
     message: (p) => `"${p.value}" is no amount, expected a number or decimal text of at least 0`,
   },
