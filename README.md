@@ -1,23 +1,25 @@
-# vite-plus-starter
+<p align="center">
+  <img src="./assets/logo.svg" alt="nutrition" width="128" height="128">
+</p>
 
-A starter for creating a Vite Plus project.
+<h1 align="center">nutrition</h1>
 
-## Development
+<p align="center">
+  The nutrition declaration of a food, calculated from its recipe under the EU food information<br>
+  regulation (Regulation (EU) No 1169/2011, known as FIC, LMIV in German, INCO in French).<br>
+  It calculates, it never guesses.
+</p>
 
-- Install dependencies:
+> [!WARNING]
+> Early development (0.x). Nothing is published yet and the API will change. The library is no legal
+> advice: the label stays the responsibility of the food business.
 
-```bash
-vp install
+## Install
+
+```sh
+npm install @thereforejs/nutrition
 ```
 
-- Run the unit tests:
+## License
 
-```bash
-vp test
-```
-
-- Build the library:
-
-```bash
-vp pack
-```
+[MIT](./LICENSE)
