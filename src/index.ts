@@ -1,3 +1,2 @@
-export function fn() {
-  return "Hello, Vite+!";
-}
+export { DiagnosticError } from "./diagnostics/fail.ts";
+export type { Diagnostic, DiagnosticCode, DiagnosticParams } from "./types/index.ts";

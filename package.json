@@ -45,6 +45,9 @@
     "prepack": "vp check && vp test run && vp pack",
     "prepare": "vp config"
   },
+  "dependencies": {
+    "@thereforejs/decy": "^0.1.1"
+  },
   "devDependencies": {
     "@types/node": "^26.6.5",
     "typescript": "^7.0.2",
