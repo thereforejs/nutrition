@@ -55,6 +55,26 @@ per 100 g, as a number or decimal text. Energy is always calculated, never passe
 | `voluntary`       | `[]`     | voluntary nutrients to declare: `monounsaturates`, `polyunsaturates`, `polyols`, `starch`, `fibre`                                                                                   |
 | `referenceIntake` | `false`  | adds `referenceIntake: { exact, rounded, text }` (percent, whole, half up) to energy and the nutrients of Annex XIII Part B, and `referenceIntakeStatement` per locale (Art. 32(5))  |
 
+## Data
+
+Values of over 7,100 foods come with [`@thereforejs/foods`](https://github.com/thereforejs/foods),
+and [`@thereforejs/food-finder`](https://github.com/thereforejs/food-finder) finds them by what people
+type. Both are optional:
+
+```sh
+npm install @thereforejs/foods @thereforejs/food-finder
+```
+
+```ts
+import { calculateNutrition } from "@thereforejs/nutrition";
+import { C131000 } from "@thereforejs/foods"; // Oat whole grain, raw
+
+calculateNutrition({ ingredients: [{ amount: 100, per100g: C131000.per100g }] });
+```
+
+A `null` in foods is unknown here and lands in the report; its `marks` say whether it is below a
+limit of detection.
+
 ## Your values, your responsibility
 
 The library knows no foods, only the values you pass. It checks that they are possible, not that they
