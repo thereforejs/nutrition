@@ -280,33 +280,20 @@ the input list. Every code that can appear in it is explained in the README (mea
 
 ---
 
-## 8. Data package `@thereforejs/bls`
+## 8. Data: `@thereforejs/foods` and `@thereforejs/food-finder`
 
-A separate, optional package with the Bundeslebensmittelschlüssel (BLS 4.0, Max Rubner-Institut). The
-calculator does not depend on it.
+Two separate packages, optional peers of the calculator, which never imports either.
 
-**Source:** 7,140 foods, 138 nutrients, values per 100 g of the edible part, a German and an English
-name per food.
+- **`@thereforejs/foods`:** nutrient values per 100 g of over 7,100 foods, one export per code,
+  starting from the BLS 4.0 (Max Rubner-Institut, CC BY 4.0). Its `per100g` uses the keys of 3.2 and
+  goes into an ingredient as it is. A `null` comes with `marks` (`<LOD`, `<LOQ`, `TR`) where the
+  source has one; the calculation reads it as unknown like any `null` (3.2), the application decides
+  what to show. Foods whose fatty acids exceed their fat are left out there, so every food passes 3.2.
+- **`@thereforejs/food-finder`:** finds the code of a food by what people type, per language.
 
-**Split by main food group.** The leading letter of the BLS code names the main food group (BLS 4.0
-documentation, section 2.4). Each group is its own entry point, so an application that calculates
-confectionery imports only that group. With the nutrients of the declaration and both names, all groups
-together are about 2.2 MB (about 390 KB gzip); a single group is 4 to 75 KB gzip.
-
-**Preparation**, by a build script from the original file, reproducible:
-
-- Only the nutrients the declaration and the energy need, plus water.
-- Values as exact decimal strings. The spreadsheet stores binary floating point (`9.3000000000000007`,
-  `1.4999999999999999E-2`); the script writes the shortest decimal that reads back to the same number
-  (`9.3`, `0.015`).
-- Sodium is converted from mg to g.
-- A missing value (`-`) becomes `null`, never 0 (BLS 4.0 documentation, section 4.3).
-- Values below the limit of detection or quantification and traces (`<LOD`, `<LOQ`, `TR`) are kept as
-  what they are; how the calculation treats them is open question 6.
-
-**License:** CC BY 4.0, the Max Rubner-Institut named as publisher, changes marked. Citation:
-Max Rubner-Institut (2025): Bundeslebensmittelschlüssel (BLS), Version 4.0, Karlsruhe.
-DOI: 10.25826/Data20251217-134202-0. The PDF documentation is not redistributed, only linked.
+A test runs every food of foods through the calculation, and its `per100g` type must be an
+ingredient's. The peer range is `>=0.0.1 <0.1.0`, so patches of foods reach users without a release
+of the calculator (`^0.0.1` would pin 0.0.1 exactly).
 
 ---
 
@@ -338,7 +325,8 @@ Every rule gets a red test before the code and a sabotage probe after.
 - Sodium or salt per ingredient; both only when they agree exactly (2026-10-24).
 - Optional piece weight in grams (2026-10-24).
 - Locales are imported, not named in an option (2026-10-24).
-- Data in a separate package, split by BLS main food group; German and English names (2026-10-24).
+- Data in separate packages, `@thereforejs/foods` and `@thereforejs/food-finder`, optional peers
+  that take every patch (2026-10-31).
 - Rounding half up, calculated at 12 decimals, energy from the values before display rounding.
 - Values per 100 g and per piece carry 12 decimals; nobody gains from the 124th (2026-10-24).
 - German labels as Annex XV words them, "Energie" for energy (2026-10-24).
@@ -378,8 +366,8 @@ Every rule gets a red test before the code and a sabotage probe after.
    declared" and bans nothing, but rounding exists "in order not to imply a level of precision which
    is not true" (guidance, section 6), which "0,3 g" fat would do. The result shows only "0 g" or
    "< x g" there; the precise value stays in `exact`.
-6. **`<LOD`, `<LOQ`, `TR` in the data:** neither zero nor missing. The library does not pick a reading;
-   the question is what the caller must state.
+6. ~~`<LOD`, `<LOQ`, `TR` in the data~~: decided 2026-10-31. foods ships them as `null` with the mark
+   in `marks`; the calculation reads them as unknown (3.2), the application decides what to show.
 7. **Salatrims:** Annex XIV does not say "fat (except salatrims)". Until settled, fat is read as total
    lipids including salatrims (Annex I No 2), like carbohydrate including polyols. Polyols and
    erythritol are settled by Annex I (4.2).
