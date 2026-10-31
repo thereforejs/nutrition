@@ -92,6 +92,18 @@ describe("percent of the reference intake, from the exact value, whole percent h
     );
     expect(result.per100g.fat.referenceIntake?.rounded).toBe("36");
   });
+
+  // 0.3 × 100 / 70 = 0.428571428571 reads 0 %; the label's "<0,5 g" would give 0.714285714286, 1 %.
+  test("0.3 g fat: from the exact amount, not the negligible one on the label", () => {
+    const result = calculateNutrition(
+      { ingredients: [{ amount: 100, per100g: { fat: "0.3" } }] },
+      { referenceIntake: true },
+    );
+    expect(result.per100g.fat.referenceIntake).toMatchObject({
+      exact: "0.428571428571",
+      rounded: "0",
+    });
+  });
 });
 
 describe("without the option nothing changes", () => {
