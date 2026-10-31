@@ -11,14 +11,72 @@
 </p>
 
 > [!WARNING]
-> Early development (0.x). Nothing is published yet and the API will change. The library is no legal
-> advice: the label stays the responsibility of the food business.
+> Early development (0.x). The API may still change. The library is no legal advice: the label stays
+> the responsibility of the food business.
 
 ## Install
 
 ```sh
 npm install @thereforejs/nutrition
 ```
+
+## At a glance
+
+Bread rolls: the recipe in grams as it comes out of the oven, values from
+[`@thereforejs/foods`](https://github.com/thereforejs/foods). The baking loss is taken off the water.
+
+```ts
+import { calculateNutrition } from "@thereforejs/nutrition";
+import { de, en } from "@thereforejs/nutrition/locales";
+import { C214200, N110000, R111000, R459000 } from "@thereforejs/foods";
+
+const { per100g, perPiece, report } = calculateNutrition(
+  {
+    ingredients: [
+      { amount: 1000, per100g: C214200.per100g }, // wheat flour type 550
+      { amount: 420, per100g: N110000.per100g }, // water: 600 g less 180 g baking loss
+      { amount: 40, per100g: R459000.per100g }, // fresh yeast
+      { amount: 20, per100g: R111000.per100g }, // salt
+    ],
+    pieceWeight: 60,
+  },
+  { locales: [de, en] },
+);
+```
+
+The declaration, each value as `text` in every locale you import:
+
+|                              | pro 100 g          | pro Brötchen (60 g) |
+| ---------------------------- | ------------------ | ------------------- |
+| Energie                      | 1016 kJ / 240 kcal | 609 kJ / 144 kcal   |
+| Fett                         | 0,8 g              | <0,5 g              |
+| davon: gesättigte Fettsäuren | <0,1 g             | <0,1 g              |
+| Kohlenhydrate                | 48 g               | 29 g                |
+| davon: Zucker                | <0,5 g             | <0,5 g              |
+| Eiweiß                       | 8,5 g              | 5,1 g               |
+| Salz                         | 1,3 g              | 0,78 g              |
+
+|                    | per 100 g          | per roll of 60 g  |
+| ------------------ | ------------------ | ----------------- |
+| energy             | 1016 kJ / 240 kcal | 609 kJ / 144 kcal |
+| fat                | 0.8 g              | <0.5 g            |
+| of which saturates | <0.1 g             | <0.1 g            |
+| carbohydrate       | 48 g               | 29 g              |
+| of which sugars    | <0.5 g             | <0.5 g            |
+| protein            | 8.5 g              | 5.1 g             |
+| salt               | 1.3 g              | 0.78 g            |
+
+Every value also comes as data: `exact`, `rounded`, `negligible`, `atMost`. What the calculation went
+on without is in `report`: the BLS has no value for polyols of fresh yeast, so the energy is
+calculated without them and the report says so.
+
+More recipes from easy to hard (voluntary nutrients, % reference intake, a supplier's sheet, a
+refused input) are in [`examples/recipes.ts`](./examples/recipes.ts): `vp run example`.
+
+**Checked against published declarations** ([`tests/oracle.test.ts`](./tests/oracle.test.ts)): the
+EuroFIR recipe example, and the worked examples of two labelling guides. Same sums, same rounding;
+the energy differs only where a partner calculates it from the rounded values (we use the exact
+ones, SPEC 10).
 
 ## Usage
 
