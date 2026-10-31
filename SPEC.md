@@ -352,6 +352,10 @@ Every rule gets a red test before the code and a sabotage probe after.
 - `0` is none, `null` is unknown (calculated without, reported), a missing key is 0. Errors only for
   impossible or contradicting input; the caller vouches for the values (2026-10-24).
 - Energy counts every component in the data, declared or not (Annex XIV, 2026-10-24).
+- Below the threshold only "0 g" or "<x g", never a precise value; it stays in `exact` (guidance,
+  section 6, 2026-10-24).
+- The footnote "not applicable to sub-categories" concerns components the declaration cannot carry
+  (reading, 11.3, 2026-10-24).
 - License MIT.
 
 ---
@@ -363,12 +367,17 @@ Every rule gets a red test before the code and a sabotage probe after.
    Rubner-Institut settles it before the data package is published.
 2. ~~Energy of nutrients not declared~~: decided 2026-10-24, they count (4.2).
 3. ~~Rounding at the boundary~~: decided 2026-10-24 by the wording of Table 4, whose step follows the
-   amount itself: 9.96 g is "< 10 g", rounds to 0.1 g and reads "10,0 g". Still open: the meaning of
-   the footnote "not applicable to sub-categories".
+   amount itself: 9.96 g is "< 10 g", rounds to 0.1 g and reads "10,0 g". The footnote "not
+   applicable to sub-categories" (Tables 3 and 4) is explained nowhere; sugars and saturates carry it
+   and have their own rows, so it is read as components below them (lactose, omega-3). Those cannot be
+   declared at all, the declaration is a closed list (Q&A 2018/C 196/01, 3.3.5), so it does not
+   concern the library (reading, 2026-10-24).
 4. ~~Rounding per piece~~: decided 2026-10-24, the same steps of Table 4, applied to the value per
    piece, which comes from the exact sums, never from the rounded values per 100 g.
-5. **A precise value below the threshold:** Table 4 says "0 g" or "< x g" "may be declared". Whether a
-   precise value such as "0,3 g" fat may be declared instead is not stated.
+5. ~~A precise value below the threshold~~: decided 2026-10-24. Table 4 says "0 g" or "< x g" "may be
+   declared" and bans nothing, but rounding exists "in order not to imply a level of precision which
+   is not true" (guidance, section 6), which "0,3 g" fat would do. The result shows only "0 g" or
+   "< x g" there; the precise value stays in `exact`.
 6. **`<LOD`, `<LOQ`, `TR` in the data:** neither zero nor missing. The library does not pick a reading;
    the question is what the caller must state.
 7. **Salatrims:** Annex XIV does not say "fat (except salatrims)". Until settled, fat is read as total
