@@ -45,7 +45,7 @@
     "check": "vp check",
     "prepack": "vp check && vp test run && vp pack",
     "prepare": "vp config",
-    "example": "node examples/recipes.ts"
+    "example": "vpx examples/recipes.ts"
   },
   "dependencies": {
     "@thereforejs/decy": "^0.1.1"
