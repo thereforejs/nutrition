@@ -184,7 +184,8 @@ Annex XIV and the definitions of Annex I are unchanged in the consolidated text 
 
 ### 4.3 Salt (Annex I No 11)
 
-Salt = sodium × 2.5. Every ingredient is held as sodium (salt × 0.4, exact), and only sodium is
+Salt = sodium × 2.5, always from the total sodium of the food (Commission Q&A 2018/C 196/01,
+3.2.4). Every ingredient is held as sodium (salt × 0.4, exact), and only sodium is
 summed and divided. Salt is derived at the very end from the sodium per 100 g or per piece, so salt and
 sodium always fall on the same side of every threshold of Table 4.
 
@@ -212,11 +213,33 @@ derived from calculation or analysis of between 12.4 g and 11.5 g" (section 6).
 
 **Negligible amounts.** At or below the lowest threshold, or when no detectable amount is present, the
 guidance lets the label read "0 g" or "< x g", or alternatively "contains negligible amounts of ..."
-(section 6). The result marks such a value as negligible, so an application can choose any of the
-three.
+(section 6; Commission Q&A 2018/C 196/01, 3.2.2). The result marks such a value as `negligible`, so
+an application can choose any of the three. Which number the result shows is decided once, by the
+option `negligible`:
+
+- `"auto"` (default), as common practice does: "0 g" when there is none (exactly 0), "<x g" when
+  there is some (0.004 g fat reads "<0,5 g"). Never "0,00 g" or "0,01 g" for an amount under the
+  threshold.
+- `"lessThan"`: always "<x g"; `"zero"`: always "0 g".
+
+The data says it, not only the text: `rounded` is then x and `atMost: true` (an upper bound). x is
+Table 4's own: 0.5 g, 0.1 g for fatty acids, 0.005 g sodium, 0.01 g salt.
 
 **The text keeps the step's decimals**, trailing zeros included: 2.0 g fat rounded to 0.1 g reads
 "2,0 g", never "2 g". Units follow Annex XV (kJ, kcal, g).
+
+### 4.5 Percent of the reference intake (Art. 32(4), Annex XIII Part B)
+
+Optional (`referenceIntake: true`), per 100 g and per piece (Art. 33(1)(c)).
+
+- Only energy, fat, saturates, carbohydrate, sugars, protein and salt: the nutrients of Annex XIII
+  Part B (Art. 32(4); Commission Q&A 2018/C 196/01, 3.3.4: fibre "No"). Reference intakes: 8 400 kJ /
+  2 000 kcal, fat 70 g, saturates 20 g, carbohydrate 260 g, sugars 90 g, protein 50 g, salt 6 g.
+- Percent = exact value × 100 / reference intake, 12 decimals; kJ and kcal each against their own.
+- The law, the tolerance guidance and the Q&A set no rounding. Decided with the baker: whole percent,
+  half up, from the exact value (35.7 % reads 36 %), rather one percent more than one less.
+- The statement of Art. 32(5) comes with it in every locale: "Referenzmenge für einen
+  durchschnittlichen Erwachsenen (8 400 kJ/2 000 kcal)".
 
 ---
 
@@ -319,14 +342,20 @@ Every rule gets a red test before the code and a sabotage probe after.
 - Rounding half up, calculated at 12 decimals, energy from the values before display rounding.
 - Values per 100 g and per piece carry 12 decimals; nobody gains from the 124th (2026-10-24).
 - German labels as Annex XV words them, "Energie" for energy (2026-10-24).
+- Percent of the reference intake: from the exact value, whole percent half up (2026-10-24).
 - Per piece: from the exact sums, rounded by the same steps of Table 4 (2026-10-24).
-- Negligible amounts read "<x g" by default, "0 g" by option (2026-10-24).
+- Negligible amounts: "0 g" when there is none, otherwise "<x g" with `atMost: true` in the data;
+  "always <x" and "always 0" by option (2026-10-24).
 - The rounding step follows the amount itself: 9.96 g fat reads "10,0 g" (Table 4, 2026-10-24).
 - The text keeps trailing zeros of its rounding step: "2,0 g", not "2 g" (2026-10-24).
 - Input values: number or decimal text, more than 12 decimals rounded half up to 12 (2026-10-24).
 - `0` is none, `null` is unknown (calculated without, reported), a missing key is 0. Errors only for
   impossible or contradicting input; the caller vouches for the values (2026-10-24).
 - Energy counts every component in the data, declared or not (Annex XIV, 2026-10-24).
+- Below the threshold only "0 g" or "<x g", never a precise value; it stays in `exact` (guidance,
+  section 6, 2026-10-24).
+- The footnote "not applicable to sub-categories" concerns components the declaration cannot carry
+  (reading, 11.3, 2026-10-24).
 - License MIT.
 
 ---
@@ -338,12 +367,17 @@ Every rule gets a red test before the code and a sabotage probe after.
    Rubner-Institut settles it before the data package is published.
 2. ~~Energy of nutrients not declared~~: decided 2026-10-24, they count (4.2).
 3. ~~Rounding at the boundary~~: decided 2026-10-24 by the wording of Table 4, whose step follows the
-   amount itself: 9.96 g is "< 10 g", rounds to 0.1 g and reads "10,0 g". Still open: the meaning of
-   the footnote "not applicable to sub-categories".
+   amount itself: 9.96 g is "< 10 g", rounds to 0.1 g and reads "10,0 g". The footnote "not
+   applicable to sub-categories" (Tables 3 and 4) is explained nowhere; sugars and saturates carry it
+   and have their own rows, so it is read as components below them (lactose, omega-3). Those cannot be
+   declared at all, the declaration is a closed list (Q&A 2018/C 196/01, 3.3.5), so it does not
+   concern the library (reading, 2026-10-24).
 4. ~~Rounding per piece~~: decided 2026-10-24, the same steps of Table 4, applied to the value per
    piece, which comes from the exact sums, never from the rounded values per 100 g.
-5. **A precise value below the threshold:** Table 4 says "0 g" or "< x g" "may be declared". Whether a
-   precise value such as "0,3 g" fat may be declared instead is not stated.
+5. ~~A precise value below the threshold~~: decided 2026-10-24. Table 4 says "0 g" or "< x g" "may be
+   declared" and bans nothing, but rounding exists "in order not to imply a level of precision which
+   is not true" (guidance, section 6), which "0,3 g" fat would do. The result shows only "0 g" or
+   "< x g" there; the precise value stays in `exact`.
 6. **`<LOD`, `<LOQ`, `TR` in the data:** neither zero nor missing. The library does not pick a reading;
    the question is what the caller must state.
 7. **Salatrims:** Annex XIV does not say "fat (except salatrims)". Until settled, fat is read as total
@@ -363,6 +397,8 @@ Every rule gets a red test before the code and a sabotage probe after.
   EU legislation with regard to the setting of tolerances for nutrient values declared on a label,
   December 2012:
   [PDF](https://food.ec.europa.eu/system/files/2016-10/labelling_nutrition-vitamins_minerals-guidance_tolerances_1212_en.pdf)
+- European Commission, Notice on questions and answers on the application of Regulation (EU)
+  No 1169/2011 (2018/C 196/01), CELEX 52018XC0608(01)
 - EuroFIR, How to calculate nutrient content of foods (recipe calculation guideline):
   [PDF](https://www.eurofir.org/wp-admin/wp-content/uploads/2015/12/EUROFIR-RECIPE-GUIDELINE_FINAL.pdf)
 - Max Rubner-Institut, Bundeslebensmittelschlüssel 4.0: [blsdb.de](https://www.blsdb.de),

@@ -32,16 +32,17 @@ describe("calculateNutrition: per 100 g", () => {
   });
 
   test.each<[string, string, string, boolean, string]>([
-    ["fat", "0.5", "0", true, "<0,5 g"],
-    ["saturates", "0.1", "0", true, "<0,1 g"],
+    ["fat", "0.5", "0.5", true, "<0,5 g"],
+    ["saturates", "0.1", "0.1", true, "<0,1 g"],
     ["carbohydrate", "35", "35", false, "35 g"],
-    ["sugars", "0.5", "0", true, "<0,5 g"],
+    ["sugars", "0.5", "0.5", true, "<0,5 g"],
     ["protein", "5", "5.0", false, "5,0 g"],
     ["salt", "1", "1.0", false, "1,0 g"],
     ["sodium", "0.4", "0.40", false, "0,40 g"],
   ])("%s", (key, exact, rounded, negligible, german) => {
     const value = per100g[key as keyof typeof per100g] as Parameters<typeof text>[0];
-    expect(value).toMatchObject({ exact, rounded, negligible });
+    // A negligible amount that is there reads "at most x" (SPEC 4.4).
+    expect(value).toMatchObject({ exact, rounded, negligible, atMost: negligible });
     expect(text(value)).toEqual({ "de-DE": german });
   });
 
@@ -79,6 +80,23 @@ describe("calculateNutrition: options", () => {
       "sodium",
     ]);
     expect(per100g.fibre).toMatchObject({ exact: "2", rounded: "2.0" });
+  });
+
+  test("by default a nutrient that is not there reads 0 g, one that is there reads <x g", () => {
+    const { per100g } = calculateNutrition(
+      { ingredients: [{ amount: 100, per100g: { fat: 0, sugars: "0.004", carbohydrate: 50 } }] },
+      { locales: [de] },
+    );
+    expect(per100g.fat).toMatchObject({
+      rounded: "0",
+      atMost: false,
+      text: { "de-DE": `0${NBSP}g` },
+    });
+    expect(per100g.sugars).toMatchObject({
+      rounded: "0.5",
+      atMost: true,
+      text: { "de-DE": `<0,5${NBSP}g` },
+    });
   });
 
   test("no locales: no text", () => {

@@ -1,4 +1,5 @@
-import { compare, type Decimal, decimal, round } from "@thereforejs/decy";
+import { compare, type Decimal, decimal, isZero, round } from "@thereforejs/decy";
+import type { NegligibleAs } from "../types/index.ts";
 
 interface Band {
   /** From this amount on (≥), round to `upperScale` decimals. */
@@ -46,20 +47,31 @@ const TABLE_4 = {
 
 export type Declared = keyof typeof TABLE_4 | "energyKJ" | "energyKcal";
 
-export const lessThanOf = (key: keyof typeof TABLE_4) => TABLE_4[key].lessThan;
+export interface Rounded {
+  rounded: Decimal;
+  /** At or below the threshold of Table 4. */
+  negligible: boolean;
+  /** `rounded` is an upper bound: the label reads "<0,5 g". */
+  atMost: boolean;
+}
 
-/** The declared value. The step follows the amount itself, half up (guidance: 12 g is 11.5 to 12.4). */
-export function roundOf(key: Declared, value: Decimal): { rounded: Decimal; negligible: boolean } {
+/**
+ * The declared value. The step follows the amount itself, half up (guidance: 12 g is 11.5 to 12.4).
+ * A negligible amount may read "0 g" or "<x g" (Table 4); by default "0 g" only when there is none,
+ * as common practice does (SPEC 4.4).
+ */
+export function roundOf(
+  key: Declared,
+  value: Decimal,
+  negligibleAs: NegligibleAs = "auto",
+): Rounded {
   const half = { mode: "halfAwayFromZero" } as const;
-  if (key === "energyKJ" || key === "energyKcal") {
-    return { rounded: round(value, { scale: 0, ...half }), negligible: false };
-  }
-  const { upper, upperScale, scale, negligible } = TABLE_4[key];
-  if (compare(value, upper) >= 0) {
-    return { rounded: round(value, { scale: upperScale, ...half }), negligible: false };
-  }
-  if (compare(value, negligible) > 0) {
-    return { rounded: round(value, { scale, ...half }), negligible: false };
-  }
-  return { rounded: decimal("0"), negligible: true };
+  const declared = (rounded: Decimal) => ({ rounded, negligible: false, atMost: false });
+  if (key === "energyKJ" || key === "energyKcal")
+    return declared(round(value, { scale: 0, ...half }));
+  const { upper, upperScale, scale, negligible, lessThan } = TABLE_4[key];
+  if (compare(value, upper) >= 0) return declared(round(value, { scale: upperScale, ...half }));
+  if (compare(value, negligible) > 0) return declared(round(value, { scale, ...half }));
+  const atMost = negligibleAs === "lessThan" || (negligibleAs === "auto" && !isZero(value));
+  return { rounded: atMost ? lessThan : decimal("0"), negligible: true, atMost };
 }

@@ -1,6 +1,7 @@
 import { type Decimal, decimal, isZero, toDecimalString } from "@thereforejs/decy";
 import { ENERGY_KEYS } from "../core/energy.ts";
 import { resolveOptions } from "../core/options.ts";
+import { referenceIntakeOf } from "../core/reference.ts";
 import { type Declared, roundOf } from "../core/rounding.ts";
 import { saltOf } from "../core/salt.ts";
 import { shareOf } from "../core/share.ts";
@@ -10,12 +11,13 @@ import { fail } from "../diagnostics/fail.ts";
 import type {
   Declaration,
   DeclaredValue,
+  Locale,
   NutrientKey,
   NutritionInput,
   NutritionOptions,
   NutritionResult,
 } from "../types/index.ts";
-import { textOf } from "./text.ts";
+import { percentText, textOf } from "./text.ts";
 
 // Regulation (EU) No 1169/2011, Annex XV: the order of the declaration. Mandatory: Art. 30(1).
 const ANNEX_XV = [
@@ -54,10 +56,14 @@ export function calculateNutrition(
   ];
   const totals = sumNutrients(input.ingredients, [...new Set([...keys, ...ENERGY_KEYS])]);
   const per100g = declare(totals, decimal("100"), keys, resolved);
-  if (input.pieceWeight === undefined) return { per100g, report: totals.report };
+  const statement = resolved.referenceIntake
+    ? { referenceIntakeStatement: localized(resolved, (locale) => locale.labels.referenceIntake) }
+    : {};
+  if (input.pieceWeight === undefined) return { per100g, report: totals.report, ...statement };
   const piece = toDecimal(input.pieceWeight, "pieceWeight");
   if (isZero(piece)) fail("pieceWeight.zero", "pieceWeight");
-  return { per100g, perPiece: declare(totals, piece, keys, resolved), report: totals.report };
+  const perPiece = declare(totals, piece, keys, resolved);
+  return { per100g, perPiece, report: totals.report, ...statement };
 }
 
 // Per piece comes from the exact sums like per 100 g, never from rounded values per 100 g.
@@ -71,17 +77,23 @@ function declare(
   // Salt from the sodium share, so both fall on the same side of every Table 4 threshold.
   values.salt = saltOf(values.sodium);
   const entry = (key: Declared, value: Decimal): DeclaredValue => {
-    const result = roundOf(key, value);
-    return {
+    const result = roundOf(key, value, options.negligible);
+    const declared: DeclaredValue = {
       exact: exactText(value),
       rounded: toDecimalString(result.rounded),
       negligible: result.negligible,
-      text: Object.fromEntries(
-        options.locales.map((locale) => [
-          locale.locale,
-          textOf(key, result, locale, options.negligible),
-        ]),
-      ),
+      atMost: result.atMost,
+      text: localized(options, (locale) => textOf(key, result, locale)),
+    };
+    const percent = options.referenceIntake ? referenceIntakeOf(key, value) : undefined;
+    if (!percent) return declared;
+    return {
+      ...declared,
+      referenceIntake: {
+        exact: exactText(percent.exact),
+        rounded: toDecimalString(percent.rounded),
+        text: localized(options, (locale) => percentText(percent.rounded, locale)),
+      },
     };
   };
   const nutrients = Object.fromEntries(keys.map((key) => [key, entry(key, values[key])]));
@@ -90,6 +102,9 @@ function declare(
     ...nutrients,
   } as Declaration;
 }
+
+const localized = (options: NutritionOptions, text: (locale: Locale) => string) =>
+  Object.fromEntries(options.locales.map((locale) => [locale.locale, text(locale)]));
 
 const exactText = (value: Decimal) =>
   toDecimalString(value)

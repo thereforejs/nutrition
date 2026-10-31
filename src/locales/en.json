@@ -14,6 +14,7 @@
     "fibre": "fibre",
     "protein": "protein",
     "salt": "salt",
-    "sodium": "sodium"
+    "sodium": "sodium",
+    "referenceIntake": "Reference intake of an average adult (8 400 kJ/2 000 kcal)"
   }
 }
